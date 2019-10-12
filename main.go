@@ -1,13 +1,29 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+func readKey() (string, error) {
+	data, err := ioutil.ReadFile("../key.txt")
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
 func main() {
-	bot, err := tgbotapi.NewBotAPI("MyAwesomeBotToken")
+	key, err := readKey()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(key)
+	bot, err := tgbotapi.NewBotAPI(key)
 	if err != nil {
 		log.Panic(err)
 	}
