@@ -2,51 +2,17 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/orsenkucher/schedulebot/bot"
+	"github.com/orsenkucher/schedulebot/creds"
 )
 
-func readKey() (string, error) {
-	data, err := ioutil.ReadFile("../key.txt")
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
-}
-
 func main() {
-	key, err := readKey()
+	key, err := creds.ReadToken()
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println(key)
-	bot, err := tgbotapi.NewBotAPI(key)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	bot.Debug = true
-
-	log.Printf("Authorized on account %s", bot.Self.UserName)
-
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-
-	updates, err := bot.GetUpdatesChan(u)
-
-	for update := range updates {
-		if update.Message == nil { // ignore any non-Message Updates
-			continue
-		}
-
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-		msg.ReplyToMessageID = update.Message.MessageID
-
-		bot.Send(msg)
-	}
+	bot.InitBot(key)
 }
