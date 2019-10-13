@@ -7,20 +7,28 @@ import (
 )
 
 // InitBot initializes telegram bot
-func InitBot(withKey string) {
+func InitBot(withKey string) *tgbotapi.BotAPI {
 	bot, err := tgbotapi.NewBotAPI(withKey)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	bot.Debug = true
+	bot.Debug = false
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
+	return bot
+}
+
+// Listen starts infinite listening
+func Listen(bot *tgbotapi.BotAPI) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
 	updates, err := bot.GetUpdatesChan(u)
+	if err != nil {
+		log.Panic(err)
+	}
 
 	for update := range updates {
 		if update.Message == nil { // ignore any non-Message Updates
