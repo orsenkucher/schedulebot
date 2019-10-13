@@ -25,7 +25,7 @@ func getMinsOfWeek() int {
 	return mins
 }
 
-// AddSchedule is cloud
+// AddSchedule appends Schedule to firebase collection
 func AddSchedule(w http.ResponseWriter, r *http.Request) {
 	str, _ := ioutil.ReadAll(r.Body)
 	var schedule Schedule
@@ -37,4 +37,30 @@ func AddSchedule(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("create client: %v", err)
 	}
 	client.Doc("Schedules/"+schedule.Name).Set(ctx, schedule)
+}
+
+func FetchSchedules() []Schedule {
+	ctx := context.Background()
+	client, err := firestore.NewClient(ctx, "scheduleuabot")
+	if err != nil {
+		log.Fatalf("create client: %v", err)
+	}
+
+	docsIter := client.Collection("Schedules").Documents(ctx)
+	docs, err := docsIter.GetAll()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	schs := make([]Schedule, 0, len(docs))
+	for _, doc := range docs {
+		sch := Schedule{}
+		err := doc.DataTo(&sch)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		schs = append(schs, sch)
+	}
+
+	return schs
 }
