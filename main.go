@@ -49,17 +49,16 @@ func send(sch cloudfunc.Schedule, b *tgbotapi.BotAPI, ch chan int64) {
 	for {
 		del, ind := calc(sch)
 		fmt.Println(users)
-		//f := true
 		fmt.Println("sleep for:", del.Minutes())
 		time.Sleep(del)
 		newUsers := []int64{}
-	Label:
+	Loop:
 		for {
 			select {
 			case i := <-ch:
 				newUsers = append(newUsers, i)
 			default:
-				break Label
+				break Loop
 			}
 		}
 		users = append(users, newUsers...)

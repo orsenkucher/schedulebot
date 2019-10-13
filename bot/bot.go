@@ -32,21 +32,58 @@ func Listen(bot *tgbotapi.BotAPI, chans map[string]chan int64) {
 	}
 
 	for update := range updates {
-		if update.Message == nil { // ignore any non-Message Updates
+		if update.CallbackQuery != nil {
+			handleCallback(bot, update, chans)
 			continue
 		}
 
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-		msg.ReplyToMessageID = update.Message.MessageID
-		bot.Send(msg)
-
-		ch, ok := chans[update.Message.Text]
-		if ok {
-			fmt.Println(update.Message.Text)
-			go addNewUser(ch, update.Message.Chat.ID)
+		if update.Message != nil {
+			if update.Message.IsCommand() {
+				handleCommand(bot, update)
+			} else if update.Message.Text != "" {
+				handleMessage(bot, update)
+			}
+			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+			continue
 		}
+	}
+}
+
+func handleMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+	if _, err := bot.Send(msg); err != nil {
+		log.Panic(err)
+	}
+}
+
+var inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData(" 🥞 1 група  ", "group1"),
+		tgbotapi.NewInlineKeyboardButtonData(" 🍇 2 група  ", "group2"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData(" 🤹 demo  ", "demo"),
+	),
+)
+
+func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Go!")
+	msg.ReplyMarkup = inlineKeyboard
+	if _, err := bot.Send(msg); err != nil {
+		log.Panic(err)
+	}
+}
+
+func handleCallback(
+	bot *tgbotapi.BotAPI,
+	update tgbotapi.Update,
+	chans map[string]chan int64) {
+	data := update.CallbackQuery.Data
+	chatId := update.CallbackQuery.Message.Chat.ID
+	ch, ok := chans[data]
+	if ok {
+		fmt.Println(data)
+		go addNewUser(ch, chatId)
 	}
 }
 
