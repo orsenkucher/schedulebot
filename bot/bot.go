@@ -67,10 +67,22 @@ var inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 )
 
 func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Go!")
-	msg.ReplyMarkup = inlineKeyboard
-	if _, err := bot.Send(msg); err != nil {
-		log.Panic(err)
+	switch update.Message.Command() {
+	case "sub", "start", "go":
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Go!")
+		msg.ReplyMarkup = inlineKeyboard
+		if _, err := bot.Send(msg); err != nil {
+			log.Panic(err)
+		}
+	case "reset":
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID,
+			"Doing reset for "+update.Message.Chat.FirstName)
+		fmt.Println("Doing reset for user", update.Message.Chat.ID)
+		if _, err := bot.Send(msg); err != nil {
+			log.Panic(err)
+		}
+	default:
+		return
 	}
 }
 
@@ -79,11 +91,11 @@ func handleCallback(
 	update tgbotapi.Update,
 	chans map[string]chan int64) {
 	data := update.CallbackQuery.Data
-	chatId := update.CallbackQuery.Message.Chat.ID
+	chatID := update.CallbackQuery.Message.Chat.ID
 	ch, ok := chans[data]
 	if ok {
 		fmt.Println(data)
-		go addNewUser(ch, chatId)
+		go addNewUser(ch, chatID)
 	}
 }
 

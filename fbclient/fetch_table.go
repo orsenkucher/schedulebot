@@ -2,7 +2,6 @@ package fbclient
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -18,7 +17,7 @@ const fetchURL = "https://us-central1-scheduleuabot.cloudfunctions.net/FetchSche
 func FetchTable() Table {
 	resp, _ := http.Get(fetchURL)
 	r, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(r))
+	// fmt.Println(string(r))
 	var table Table
 	json.Unmarshal(r, &table)
 	return table

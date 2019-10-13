@@ -19,9 +19,9 @@ import (
 func main() {
 	// fbclient.CreateDemoSched()
 	///*
-	fmt.Println(cloudfunc.GetMinsOfWeek(time.Now()))
+	fmt.Println("Minuted from week start", cloudfunc.GetMinsOfWeek(time.Now()))
 	table := fbclient.FetchTable()
-	fmt.Println(table)
+	// fmt.Println(table)
 
 	key, err := creds.ReadToken()
 
@@ -29,7 +29,7 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println(key)
+	// fmt.Println(key)
 	b := bot.InitBot(key)
 	chans := map[string]chan int64{}
 
