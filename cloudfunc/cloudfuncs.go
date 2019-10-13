@@ -3,6 +3,7 @@ package cloudfunc
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -39,7 +40,17 @@ func AddSchedule(w http.ResponseWriter, r *http.Request) {
 	client.Doc("Schedules/"+schedule.Name).Set(ctx, schedule)
 }
 
-func FetchSchedules() []Schedule {
+// FetchSchedules returns Schedules json
+func FetchSchedules(w http.ResponseWriter, r *http.Request) {
+	schs := fetchSchedules()
+	js, err := json.Marshal(&schs)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Fprint(w, js)
+}
+
+func fetchSchedules() []Schedule {
 	ctx := context.Background()
 	client, err := firestore.NewClient(ctx, "scheduleuabot")
 	if err != nil {
