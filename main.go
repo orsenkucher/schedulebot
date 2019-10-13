@@ -1,22 +1,41 @@
 package main
 
-import "github.com/orsenkucher/schedulebot/fbclient"
+import (
+	"fmt"
+	"time"
+
+	"github.com/orsenkucher/schedulebot/cloudfunc"
+
+	"github.com/orsenkucher/schedulebot/fbclient"
+)
 
 func main() {
-	/*
-		key, err := creds.ReadToken()
+	table := fbclient.FetchTable()
+	fmt.Println(table)
 
-		if err != nil {
-			panic(err)
-		}
+	for _, sch := range table {
+		time.AfterFunc(calc(sch), func() {})
+	}
 
-		fmt.Println(key)
-		b := bot.InitBot(key) //*/
-	/*
-		j := func() { job.Job(b) }
-		doneCh := scheduler.ScheduleJob(j, 10*time.Second)
-		defer func() { doneCh <- struct{}{} }()
+	// 	key, err := creds.ReadToken()
 
-		bot.Listen(b)//*/
-	fbclient.CreateSchedule()
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+
+	// 	fmt.Println(key)
+	// 	b := bot.InitBot(key)
+
+	// 	bot.Listen(b)
+}
+
+func calc(s cloudfunc.Schedule) time.Duration {
+	now := time.Now().UTC().Add(3 * time.Hour)
+	mins := cloudfunc.GetMinsOfWeek(now)
+	nextEvent := 0
+
+	for i := 0; i < len(s.Event); i++ {
+
+	}
+	return 0
 }
