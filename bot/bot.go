@@ -43,3 +43,17 @@ func Listen(bot *tgbotapi.BotAPI) {
 		bot.Send(msg)
 	}
 }
+
+type User struct {
+	ChatID int64
+}
+
+func SpreadMessage(b *tgbotapi.BotAPI, users []User, msg string) error {
+	for _, u := range users {
+		tgmsg := tgbotapi.NewMessage(u.ChatID, msg)
+		if _, err := b.Send(tgmsg); err != nil {
+			return err
+		}
+	}
+	return nil
+}
