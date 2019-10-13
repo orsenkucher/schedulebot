@@ -2,17 +2,20 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/orsenkucher/schedulebot/bot"
-	"github.com/orsenkucher/schedulebot/creds"
+	"strconv"
+	"time"
 )
 
 func main() {
-	key, err := creds.ReadToken()
+	/*key, err := creds.ReadToken()
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println(key)
-	bot.InitBot(key)
+	bot.InitBot(key)//*/
+
+	t := time.Now()
+	fmt.Println(t.Weekday())
+	fmt.Println(strconv.Itoa(t.Hour()) + ":" + strconv.Itoa(t.Minute()))
 }
