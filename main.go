@@ -2,37 +2,73 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/orsenkucher/schedulebot/bot"
 	"github.com/orsenkucher/schedulebot/cloudfunc"
-
+	"github.com/orsenkucher/schedulebot/creds"
 	"github.com/orsenkucher/schedulebot/fbclient"
 )
 
+//Mehmat.firstyear.math.group1.subgroup2
+//Custom schedules
+//create kostyl for migalki
+
 func main() {
+	//*
+	fmt.Println(cloudfunc.GetMinsOfWeek(time.Now()))
 	table := fbclient.FetchTable()
 	fmt.Println(table)
 
-	for _, sch := range table {
-		dur, event := calc(sch)
-		time.AfterFunc(dur, func() { f(event) })
+	key, err := creds.ReadToken()
+
+	if err != nil {
+		panic(err)
 	}
-	time.Sleep(30 * time.Second)
 
-	// 	key, err := creds.ReadToken()
+	fmt.Println(key)
+	b := bot.InitBot(key)
+	chans := map[string]chan int64{}
 
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-
-	// 	fmt.Println(key)
-	// 	b := bot.InitBot(key)
-
-	// 	bot.Listen(b)
+	for _, sch := range table {
+		chans[sch.Name] = make(chan int64)
+		go send(sch, b, chans[sch.Name])
+	}
+	bot.Listen(b, chans)
+	//*/
 }
 
-func f(ind int) {
-	fmt.Println(ind)
+func send(sch cloudfunc.Schedule, b *tgbotapi.BotAPI, ch chan int64) {
+	users := []int64{}
+	for i := 0; i < len(sch.Subscribers); i++ {
+		n, _ := strconv.ParseInt(sch.Subscribers[i], 10, 64)
+		users = append(users, n)
+	}
+	for {
+		del, ind := calc(sch)
+		fmt.Println(users)
+		//f := true
+		fmt.Println("sleep for:", del.Minutes())
+		time.Sleep(del)
+		newUsers := []int64{}
+	Label:
+		for {
+			select {
+			case i := <-ch:
+				newUsers = append(newUsers, i)
+			default:
+				break Label
+			}
+		}
+		users = append(users, newUsers...)
+
+		fmt.Println(users)
+		bot.SpreadMessage(b, users, sch.Event[ind])
+		fbclient.AddSubscribers(newUsers, sch.Name)
+		fmt.Println("Success")
+	}
 }
 
 func calc(s cloudfunc.Schedule) (time.Duration, int) {
@@ -40,12 +76,13 @@ func calc(s cloudfunc.Schedule) (time.Duration, int) {
 	now := time.Now().UTC().Add(3 * time.Hour)
 	mins := cloudfunc.GetMinsOfWeek(now)
 	nextEvent := 0
-	minMins := (s.Minute[0] - mins + mpw) % mpw
+	minMins := mpw
 
-	for i := 1; i < len(s.Event); i++ {
-		if minMins > (s.Minute[i]-mins+mpw)%mpw {
+	for i := 0; i < len(s.Event); i++ {
+		curmins := (s.Minute[i] - 5 - mins + mpw) % mpw
+		if minMins > curmins && curmins != 0 {
 			nextEvent = i
-			minMins = (s.Minute[i] - mins + mpw) % mpw
+			minMins = curmins
 		}
 	}
 	return time.Duration(minMins) * time.Minute, nextEvent

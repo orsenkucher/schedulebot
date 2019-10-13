@@ -20,6 +20,12 @@ type Schedule struct {
 	Subscribers []string `firebase:"subscribers" json:"subscribers"`
 }
 
+// SubscriberQuerie is public
+type SubscriberQuerie struct {
+	ScheduleName string   `json:"schName"`
+	IDs          []string `json:"IDs"`
+}
+
 // GetMinsOfWeek return mins passed from week start
 func GetMinsOfWeek(t time.Time) int {
 	mins := t.Minute() + t.Hour()*60 + int(t.Weekday())*24*60
@@ -74,4 +80,25 @@ func fetchSchedules() []Schedule {
 	}
 
 	return schs
+}
+
+// AddSubscribers is public
+func AddSubscribers(w http.ResponseWriter, r *http.Request) {
+	str, _ := ioutil.ReadAll(r.Body)
+	var querie SubscriberQuerie
+	json.Unmarshal(str, &querie)
+
+	ctx := context.Background()
+	client, err := firestore.NewClient(ctx, "scheduleuabot")
+	if err != nil {
+		log.Fatalf("create client: %v", err)
+	}
+
+	scheduleRef := client.Doc("Schedules/" + querie.ScheduleName)
+	var schedule Schedule
+	docsnap, _ := scheduleRef.Get(ctx)
+	docsnap.DataTo(&schedule)
+
+	schedule.Subscribers = append(schedule.Subscribers, querie.IDs...)
+	scheduleRef.Set(ctx, schedule)
 }

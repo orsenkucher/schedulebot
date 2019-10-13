@@ -9,10 +9,12 @@ import (
 	"github.com/orsenkucher/schedulebot/cloudfunc"
 )
 
+// Table is public
 type Table []cloudfunc.Schedule
 
 const fetchURL = "https://us-central1-scheduleuabot.cloudfunctions.net/FetchSchedules"
 
+// FetchTable is public
 func FetchTable() Table {
 	resp, _ := http.Get(fetchURL)
 	r, _ := ioutil.ReadAll(resp.Body)
