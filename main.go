@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"time"
 
 	"github.com/orsenkucher/schedulebot/bot"
@@ -11,9 +12,9 @@ import (
 )
 
 func main() {
-
 	// /*
 	key, err := creds.ReadToken()
+
 	if err != nil {
 		panic(err)
 	}
