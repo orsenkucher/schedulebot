@@ -17,7 +17,8 @@ import (
 //create kostyl for migalki
 
 func main() {
-	//*
+	// fbclient.CreateDemoSched()
+	///*
 	fmt.Println(cloudfunc.GetMinsOfWeek(time.Now()))
 	table := fbclient.FetchTable()
 	fmt.Println(table)
