@@ -3,8 +3,12 @@ package bot
 import (
 	"fmt"
 	"log"
+	"strconv"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/orsenkucher/schedulebot/cloudfunc"
+	"github.com/orsenkucher/schedulebot/fbclient"
 )
 
 // InitBot initializes telegram bot
@@ -112,4 +116,52 @@ func SpreadMessage(b *tgbotapi.BotAPI, users []int64, msg string) error {
 		}
 	}
 	return nil
+}
+
+// ActivateSchedule is public
+func ActivateSchedule(sch cloudfunc.Schedule, usersstr []string, b *tgbotapi.BotAPI, ch chan int64) {
+	users := []int64{}
+	for i := 0; i < len(usersstr); i++ {
+		n, _ := strconv.ParseInt(usersstr[i], 10, 64)
+		users = append(users, n)
+	}
+	for {
+		del, ind := calcNextSchedule(sch)
+		fmt.Println(users)
+		fmt.Println("sleep for:", del.Minutes())
+		time.Sleep(del)
+		newUsers := []int64{}
+	Loop:
+		for {
+			select {
+			case i := <-ch:
+				newUsers = append(newUsers, i)
+			default:
+				break Loop
+			}
+		}
+		users = append(users, newUsers...)
+
+		fmt.Println(users)
+		SpreadMessage(b, users, sch.Event[ind])
+		fbclient.AddSubscribers(newUsers, sch.Name)
+		fmt.Println("Success")
+	}
+}
+
+func calcNextSchedule(s cloudfunc.Schedule) (time.Duration, int) {
+	const mpw = 7 * 60 * 24
+	now := time.Now().UTC().Add(3 * time.Hour)
+	mins := cloudfunc.GetMinsOfWeek(now)
+	nextEvent := 0
+	minMins := mpw
+
+	for i := 0; i < len(s.Event); i++ {
+		curmins := (s.Minute[i] - 5 - mins + mpw) % mpw
+		if minMins > curmins && curmins != 0 {
+			nextEvent = i
+			minMins = curmins
+		}
+	}
+	return time.Duration(minMins) * time.Minute, nextEvent
 }
