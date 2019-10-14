@@ -18,9 +18,10 @@ import (
 
 func main() {
 	// fbclient.CreateDemoSched()
-	///*
+	//*
 	fmt.Println("Minuted from week start", cloudfunc.GetMinsOfWeek(time.Now()))
 	table := fbclient.FetchTable()
+	users := fbclient.FetchSubscribers()
 	// fmt.Println(table)
 
 	key, err := creds.ReadToken()
@@ -35,16 +36,17 @@ func main() {
 
 	for _, sch := range table {
 		chans[sch.Name] = make(chan int64)
-		go send(sch, b, chans[sch.Name])
+		go send(sch, users[sch.Name].IDs, b, chans[sch.Name])
 	}
 	bot.Listen(b, chans)
 	//*/
+	//fbclient.CreateSchedule()
 }
 
-func send(sch cloudfunc.Schedule, b *tgbotapi.BotAPI, ch chan int64) {
+func send(sch cloudfunc.Schedule, usersstr []string, b *tgbotapi.BotAPI, ch chan int64) {
 	users := []int64{}
-	for i := 0; i < len(sch.Subscribers); i++ {
-		n, _ := strconv.ParseInt(sch.Subscribers[i], 10, 64)
+	for i := 0; i < len(usersstr); i++ {
+		n, _ := strconv.ParseInt(usersstr[i], 10, 64)
 		users = append(users, n)
 	}
 	for {

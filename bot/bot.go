@@ -62,7 +62,7 @@ var inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData(" 🍇 2 група  ", "group2"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData(" 🤹 demo  ", "demo"),
+		tgbotapi.NewInlineKeyboardButtonData(" 🤹 demo  ", "test"),
 	),
 )
 

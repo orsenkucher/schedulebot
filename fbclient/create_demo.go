@@ -22,10 +22,9 @@ func invertedDayIndex() map[int]string {
 // CreateDemoSched creates demo schedule on firestore
 func CreateDemoSched() {
 	schedule := cloudfunc.Schedule{
-		Name:        "demo",
-		Event:       []string{},
-		Minute:      []int{},
-		Subscribers: []string{},
+		Name:   "demo",
+		Event:  []string{},
+		Minute: []int{},
 	}
 
 	idx := invertedDayIndex()

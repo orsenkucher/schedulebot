@@ -14,10 +14,16 @@ import (
 
 // Schedule is public
 type Schedule struct {
-	Name        string   `firebase:"name" json:"name"`
-	Event       []string `firebase:"event" json:"event"`
-	Minute      []int    `firebase:"minute" json:"minute"`
-	Subscribers []string `firebase:"subscribers" json:"subscribers"`
+	Name   string   `firebase:"name" json:"name"`
+	Event  []string `firebase:"event" json:"event"`
+	Minute []int    `firebase:"minute" json:"minute"`
+	//Subscribers []string `firebase:"subscribers" json:"subscribers"`
+}
+
+// Subscribers ispublic
+type Subscribers struct {
+	Name string   `firebase:"name" json:"name"`
+	IDs  []string `firebase:"IDs" json:"IDs"`
 }
 
 // SubscriberQuerie is public
@@ -44,6 +50,10 @@ func AddSchedule(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("create client: %v", err)
 	}
 	client.Doc("Schedules/"+schedule.Name).Set(ctx, schedule)
+	client.Doc("Subscribers/"+schedule.Name).Set(ctx, Subscribers{
+		Name: schedule.Name,
+		IDs:  []string{},
+	})
 }
 
 // FetchSchedules returns Schedules json
@@ -94,11 +104,47 @@ func AddSubscribers(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("create client: %v", err)
 	}
 
-	scheduleRef := client.Doc("Schedules/" + querie.ScheduleName)
-	var schedule Schedule
-	docsnap, _ := scheduleRef.Get(ctx)
-	docsnap.DataTo(&schedule)
+	subscribersRef := client.Doc("Subscribers/" + querie.ScheduleName)
+	var subscribers Subscribers
+	docsnap, _ := subscribersRef.Get(ctx)
+	docsnap.DataTo(&subscribers)
 
-	schedule.Subscribers = append(schedule.Subscribers, querie.IDs...)
-	scheduleRef.Set(ctx, schedule)
+	subscribers.IDs = append(subscribers.IDs, querie.IDs...)
+	subscribersRef.Set(ctx, subscribers)
+}
+
+//FetchSubscribers returns subscribers
+func FetchSubscribers(w http.ResponseWriter, r *http.Request) {
+	schs := fetchSubscribers()
+	js, err := json.Marshal(&schs)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Fprint(w, string(js))
+}
+
+func fetchSubscribers() map[string]Subscribers {
+	ctx := context.Background()
+	client, err := firestore.NewClient(ctx, "scheduleuabot")
+	if err != nil {
+		log.Fatalf("create client: %v", err)
+	}
+
+	docsIter := client.Collection("Subscribers").Documents(ctx)
+	docs, err := docsIter.GetAll()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	schs := map[string]Subscribers{}
+	for _, doc := range docs {
+		sch := Subscribers{}
+		err := doc.DataTo(&sch)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		schs[sch.Name] = sch
+	}
+
+	return schs
 }

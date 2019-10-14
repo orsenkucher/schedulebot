@@ -30,10 +30,9 @@ func CreateSchedule() {
 	fmt.Scanln(&name)
 	fmt.Println("Now, let's create events")
 	schedule := cloudfunc.Schedule{
-		Name:        name,
-		Event:       []string{},
-		Minute:      []int{},
-		Subscribers: []string{},
+		Name:   name,
+		Event:  []string{},
+		Minute: []int{},
 	}
 
 	for {
