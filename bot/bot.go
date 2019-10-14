@@ -135,9 +135,10 @@ func handleCallback(
 			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
 		case strings.Contains(data, "reset"):
 			fmt.Println(data)
+			go sendOnChan(ch, SubEvent{Action: Del, ChatID: chatID})
 			snackMsg := "Un️subscribed ☠️"
 			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
-			go sendOnChan(ch, SubEvent{Action: Del, ChatID: chatID})
+
 		}
 	}
 }
@@ -181,8 +182,10 @@ func ActivateSchedule(sch cloudfunc.Schedule, usersstr []string, b *tgbotapi.Bot
 			case e := <-ch:
 				switch e.Action {
 				case Add:
+					fmt.Println("adding user ", e.ChatID)
 					newInf[e.ChatID] = true
 				case Del:
+					fmt.Println("deleting user ", e.ChatID)
 					newInf[e.ChatID] = false
 				}
 			default:
@@ -190,7 +193,7 @@ func ActivateSchedule(sch cloudfunc.Schedule, usersstr []string, b *tgbotapi.Bot
 			}
 		}
 
-		users := make([]int64, 0, len(newInf))
+		users = make([]int64, 0, len(newInf))
 
 		for k, v := range newInf {
 			if v {

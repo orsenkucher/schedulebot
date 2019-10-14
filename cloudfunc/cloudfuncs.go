@@ -108,6 +108,7 @@ func SetSubscribers(w http.ResponseWriter, r *http.Request) {
 	var subscribers Subscribers
 
 	subscribers.IDs = querie.IDs
+	subscribers.Name = querie.ScheduleName
 	subscribersRef.Set(ctx, subscribers)
 }
 

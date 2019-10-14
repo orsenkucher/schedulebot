@@ -46,3 +46,8 @@ func main() {
 	//*/
 	//fbclient.CreateSchedule()
 }
+
+//GenerateTextSchedule is test
+func GenerateTextSchedule() {
+
+}

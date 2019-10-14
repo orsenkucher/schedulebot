@@ -3,8 +3,6 @@ package fbclient
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -25,7 +23,5 @@ func SetSubscribers(users []int64, schName string) {
 	}
 
 	strb, _ := json.Marshal(&que)
-	resp, _ := http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/SetSubscribers", "application/json", bytes.NewBuffer(strb))
-	r, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(r))
+	http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/SetSubscribers", "application/json", bytes.NewBuffer(strb))
 }
