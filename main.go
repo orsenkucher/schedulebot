@@ -10,10 +10,15 @@ import (
 	"github.com/orsenkucher/schedulebot/fbclient"
 )
 
+// *** ASAP ***
+//Respond to callbackQuery !
+//
+// *** Proposals ***
 //Generate buttoms by path lik below
 //Mehmat.firstyear.math.group1.subgroup2
 //Custom schedules
 //create kostyl for migalki
+//
 
 func main() {
 	// fbclient.CreateDemoSched()
@@ -31,10 +36,10 @@ func main() {
 
 	// fmt.Println(key)
 	b := bot.InitBot(key)
-	chans := map[string]bot.SubChans{}
+	chans := map[string]chan bot.SubEvent{}
 
 	for _, sch := range table {
-		chans[sch.Name] = bot.SubChans{AddChan: make(chan int64), DelChan: make(chan int64)}
+		chans[sch.Name] = make(chan bot.SubEvent)
 		go bot.ActivateSchedule(sch, users[sch.Name].IDs, b, chans[sch.Name])
 	}
 	bot.Listen(b, chans)

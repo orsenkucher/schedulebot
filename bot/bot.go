@@ -27,7 +27,7 @@ func InitBot(withKey string) *tgbotapi.BotAPI {
 }
 
 // Listen starts infinite listening
-func Listen(bot *tgbotapi.BotAPI, chans map[string]SubChans) {
+func Listen(bot *tgbotapi.BotAPI, chans map[string]chan SubEvent) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
@@ -73,11 +73,11 @@ var inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var inlineResetKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData(" 🖕🏻 1 група  ", "reset:group1"),
-		tgbotapi.NewInlineKeyboardButtonData(" 🖕🏻 2 група  ", "reset:group2"),
+		tgbotapi.NewInlineKeyboardButtonData(" 🖕🏾 1 група  ", "reset:group1"),
+		tgbotapi.NewInlineKeyboardButtonData(" 🖕🏾 2 група  ", "reset:group2"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData(" 🖕🏻 demo  ", "reset:test"),
+		tgbotapi.NewInlineKeyboardButtonData(" 🖕🏾 demo  ", "reset:test"),
 	),
 )
 
@@ -102,16 +102,27 @@ func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 }
 
-// SubChans represents add and delete sub chans
-type SubChans struct {
-	AddChan chan int64
-	DelChan chan int64
+// SubEvent represents subscription event
+type SubEvent struct {
+	ChatID int64
+	Action SubAction
 }
+
+// SubAction represents user action
+type SubAction int
+
+// Add is when user Success
+// Del is when user unsubbed
+const (
+	_ SubAction = iota
+	Add
+	Del
+)
 
 func handleCallback(
 	bot *tgbotapi.BotAPI,
 	update tgbotapi.Update,
-	chans map[string]SubChans) {
+	chans map[string]chan SubEvent) {
 	data := update.CallbackQuery.Data
 	chatID := update.CallbackQuery.Message.Chat.ID
 	ch, ok := chans[strings.Split(data, ":")[1]]
@@ -119,16 +130,20 @@ func handleCallback(
 		switch {
 		case strings.Contains(data, "sub"):
 			fmt.Println(data)
-			go sendOnChan(ch.AddChan, chatID)
+			go sendOnChan(ch, SubEvent{Action: Add, ChatID: chatID})
+			snackMsg := "Our congrats 🥂. We handled your sub!"
+			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
 		case strings.Contains(data, "reset"):
 			fmt.Println(data)
-			go sendOnChan(ch.DelChan, chatID)
+			snackMsg := "Un️subscribed ☠️"
+			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
+			go sendOnChan(ch, SubEvent{Action: Del, ChatID: chatID})
 		}
 	}
 }
 
-func sendOnChan(ch chan int64, user int64) {
-	ch <- user
+func sendOnChan(ch chan SubEvent, e SubEvent) {
+	ch <- e
 }
 
 // SpreadMessage is public
@@ -143,7 +158,7 @@ func SpreadMessage(b *tgbotapi.BotAPI, users []int64, msg string) error {
 }
 
 // ActivateSchedule is public
-func ActivateSchedule(sch cloudfunc.Schedule, usersstr []string, b *tgbotapi.BotAPI, ch SubChans) {
+func ActivateSchedule(sch cloudfunc.Schedule, usersstr []string, b *tgbotapi.BotAPI, ch chan SubEvent) {
 	users := []int64{}
 	for i := 0; i < len(usersstr); i++ {
 		n, _ := strconv.ParseInt(usersstr[i], 10, 64)
@@ -163,11 +178,13 @@ func ActivateSchedule(sch cloudfunc.Schedule, usersstr []string, b *tgbotapi.Bot
 	Loop:
 		for {
 			select {
-			case i := <-ch.AddChan:
-				newInf[i] = true
-			case i := <-ch.DelChan:
-				newInf[i] = false
-				// del here
+			case e := <-ch:
+				switch e.Action {
+				case Add:
+					newInf[e.ChatID] = true
+				case Del:
+					newInf[e.ChatID] = false
+				}
 			default:
 				break Loop
 			}
