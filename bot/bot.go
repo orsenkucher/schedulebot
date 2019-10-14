@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -26,7 +27,7 @@ func InitBot(withKey string) *tgbotapi.BotAPI {
 }
 
 // Listen starts infinite listening
-func Listen(bot *tgbotapi.BotAPI, chans map[string]chan int64) {
+func Listen(bot *tgbotapi.BotAPI, chans map[string]SubChans) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
@@ -62,11 +63,21 @@ func handleMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 var inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData(" 🥞 1 група  ", "group1"),
-		tgbotapi.NewInlineKeyboardButtonData(" 🍇 2 група  ", "group2"),
+		tgbotapi.NewInlineKeyboardButtonData(" 🥞 1 група  ", "sub:group1"),
+		tgbotapi.NewInlineKeyboardButtonData(" 🍇 2 група  ", "sub:group2"),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData(" 🤹 demo  ", "test"),
+		tgbotapi.NewInlineKeyboardButtonData(" 🤹 demo  ", "sub:test"),
+	),
+)
+
+var inlineResetKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData(" 🖕🏻 1 група  ", "reset:group1"),
+		tgbotapi.NewInlineKeyboardButtonData(" 🖕🏻 2 група  ", "reset:group2"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData(" 🖕🏻 demo  ", "reset:test"),
 	),
 )
 
@@ -81,6 +92,7 @@ func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	case "reset":
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID,
 			"Doing reset for "+update.Message.Chat.FirstName)
+		msg.ReplyMarkup = inlineResetKeyboard
 		fmt.Println("Doing reset for user", update.Message.Chat.ID)
 		if _, err := bot.Send(msg); err != nil {
 			log.Panic(err)
@@ -90,20 +102,32 @@ func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 }
 
+// SubChans represents add and delete sub chans
+type SubChans struct {
+	AddChan chan int64
+	DelChan chan int64
+}
+
 func handleCallback(
 	bot *tgbotapi.BotAPI,
 	update tgbotapi.Update,
-	chans map[string]chan int64) {
+	chans map[string]SubChans) {
 	data := update.CallbackQuery.Data
 	chatID := update.CallbackQuery.Message.Chat.ID
 	ch, ok := chans[data]
 	if ok {
-		fmt.Println(data)
-		go addNewUser(ch, chatID)
+		switch {
+		case strings.Contains(data, "sub"):
+			fmt.Println(data)
+			go sendOnChan(ch.AddChan, chatID)
+		case strings.Contains(data, "reset"):
+			fmt.Println(data)
+			go sendOnChan(ch.DelChan, chatID)
+		}
 	}
 }
 
-func addNewUser(ch chan int64, user int64) {
+func sendOnChan(ch chan int64, user int64) {
 	ch <- user
 }
 
@@ -119,7 +143,7 @@ func SpreadMessage(b *tgbotapi.BotAPI, users []int64, msg string) error {
 }
 
 // ActivateSchedule is public
-func ActivateSchedule(sch cloudfunc.Schedule, usersstr []string, b *tgbotapi.BotAPI, ch chan int64) {
+func ActivateSchedule(sch cloudfunc.Schedule, usersstr []string, b *tgbotapi.BotAPI, ch SubChans) {
 	users := []int64{}
 	for i := 0; i < len(usersstr); i++ {
 		n, _ := strconv.ParseInt(usersstr[i], 10, 64)
@@ -134,8 +158,11 @@ func ActivateSchedule(sch cloudfunc.Schedule, usersstr []string, b *tgbotapi.Bot
 	Loop:
 		for {
 			select {
-			case i := <-ch:
+			case i := <-ch.AddChan:
 				newUsers = append(newUsers, i)
+			case i := <-ch.DelChan:
+				fmt.Println(i)
+				// del here
 			default:
 				break Loop
 			}

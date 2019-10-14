@@ -30,10 +30,10 @@ func main() {
 
 	// fmt.Println(key)
 	b := bot.InitBot(key)
-	chans := map[string]chan int64{}
+	chans := map[string]bot.SubChans{}
 
 	for _, sch := range table {
-		chans[sch.Name] = make(chan int64)
+		chans[sch.Name] = bot.SubChans{AddChan: make(chan int64), DelChan: make(chan int64)}
 		go bot.ActivateSchedule(sch, users[sch.Name].IDs, b, chans[sch.Name])
 	}
 	bot.Listen(b, chans)
