@@ -72,6 +72,11 @@ func CreateSchedule() {
 		}
 	}
 
+	SendSchedule(schedule)
+}
+
+// SendSchedule is public
+func SendSchedule(schedule cloudfunc.Schedule) {
 	strb, _ := json.Marshal(&schedule)
 	fmt.Println("Sending json...")
 	prettystrb, _ := json.MarshalIndent(&schedule, "", "\t")

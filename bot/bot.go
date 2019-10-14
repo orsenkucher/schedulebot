@@ -66,9 +66,9 @@ var inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData(" 🥞 1 група  ", "sub:group1"),
 		tgbotapi.NewInlineKeyboardButtonData(" 🍇 2 група  ", "sub:group2"),
 	),
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData(" 🤹 demo  ", "sub:test"),
-	),
+	// tgbotapi.NewInlineKeyboardRow(
+	// 	tgbotapi.NewInlineKeyboardButtonData(" 🤹 demo  ", "sub:test"),
+	// ),
 )
 
 var inlineResetKeyboard = tgbotapi.NewInlineKeyboardMarkup(
@@ -76,9 +76,9 @@ var inlineResetKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData(" 🖕🏾 1 група  ", "reset:group1"),
 		tgbotapi.NewInlineKeyboardButtonData(" 🖕🏾 2 група  ", "reset:group2"),
 	),
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData(" 🖕🏾 demo  ", "reset:test"),
-	),
+	// tgbotapi.NewInlineKeyboardRow(
+	// 	tgbotapi.NewInlineKeyboardButtonData(" 🖕🏾 demo  ", "reset:test"),
+	// ),
 )
 
 func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
