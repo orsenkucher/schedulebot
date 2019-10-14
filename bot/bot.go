@@ -3,6 +3,7 @@ package bot
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -20,21 +21,63 @@ func InitBot(withKey string) *tgbotapi.BotAPI {
 	}
 
 	bot.Debug = false
+	_, err = bot.RemoveWebhook()
+	if err != nil {
+		log.Println("Cant remove webhook")
+	}
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
+	// port, ok := os.LookupEnv("PORT")
+	// if !ok {
+	// 	log.Fatal("$PORT not found")
+	// }
+	// fmt.Println("Using port: ", port)
+
+	// url := "https://schedulebot-x2gm2h2g4a-uc.a.run.app"
+	// _, err = bot.SetWebhook(tgbotapi.NewWebhook(url + ":" + port + "/" + bot.Token))
+	// _, err = bot.SetWebhook(tgbotapi.NewWebhook("https://schedulebot-x2gm2h2g4a-uc.a.run.app:8443/" + bot.Token))
+	_, err = bot.SetWebhook(tgbotapi.NewWebhookWithCert("https://schedulebot-x2gm2h2g4a-uc.a.run.app:8443/"+bot.Token, "cert.pem"))
+	// _, err = bot.SetWebhook(tgbotapi.NewWebhookWithCert("https://www.google.com:8443/"+bot.Token, "cert.pem"))
+	log.Println("SetWebhook done")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	info, err := bot.GetWebhookInfo()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if info.LastErrorDate != 0 {
+		log.Fatalf("Telegram callback failed: %s", info.LastErrorMessage)
+	}
+
+	log.Println("Bot inited")
 
 	return bot
 }
 
 // Listen starts infinite listening
 func Listen(bot *tgbotapi.BotAPI, chans map[string]chan SubEvent) {
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
+	// u := tgbotapi.NewUpdate(0)
+	// u.Timeout = 60
 
-	updates, err := bot.GetUpdatesChan(u)
-	if err != nil {
-		log.Panic(err)
-	}
+	// updates, err := bot.GetUpdatesChan(u)
+	// if err != nil {
+	// 	log.Panic(err)
+	// }
+
+	// port, ok := os.LookupEnv("PORT")
+	// if !ok {
+	// 	log.Fatal("$PORT not found")
+	// }
+
+	updates := bot.ListenForWebhook("/" + bot.Token)
+	log.Println("Got updates")
+	go http.ListenAndServeTLS("0.0.0.0:8443", "cert.pem", "key.pem", nil)
+	// go http.ListenAndServeTLS("0.0.0.0:"+port, "cert.pem", "key.pem", nil)
+	log.Println("Launched tls goroutine")
+	// go http.ListenAndServe("0.0.0.0:"+port, nil)
+	// log.Println("Launched port goroutine")
 
 	for update := range updates {
 		if update.CallbackQuery != nil {

@@ -6,4 +6,6 @@ RUN go build -v -o /app main.go
 
 FROM gcr.io/distroless/base
 COPY --from=build /app /app
+COPY cert.pem .
+COPY key.pem .
 CMD ["/app"]
