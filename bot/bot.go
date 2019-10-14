@@ -114,7 +114,7 @@ func handleCallback(
 	chans map[string]SubChans) {
 	data := update.CallbackQuery.Data
 	chatID := update.CallbackQuery.Message.Chat.ID
-	ch, ok := chans[data]
+	ch, ok := chans[strings.Split(data, ":")[1]]
 	if ok {
 		switch {
 		case strings.Contains(data, "sub"):
@@ -154,24 +154,36 @@ func ActivateSchedule(sch cloudfunc.Schedule, usersstr []string, b *tgbotapi.Bot
 		fmt.Println(users)
 		fmt.Println("sleep for:", del.Minutes())
 		time.Sleep(del)
-		newUsers := []int64{}
+		newInf := map[int64]bool{}
+
+		for i := 0; i < len(users); i++ {
+			newInf[users[i]] = true
+		}
+
 	Loop:
 		for {
 			select {
 			case i := <-ch.AddChan:
-				newUsers = append(newUsers, i)
+				newInf[i] = true
 			case i := <-ch.DelChan:
-				fmt.Println(i)
+				newInf[i] = false
 				// del here
 			default:
 				break Loop
 			}
 		}
-		users = append(users, newUsers...)
+
+		users := make([]int64, 0, len(newInf))
+
+		for k, v := range newInf {
+			if v {
+				users = append(users, k)
+			}
+		}
 
 		fmt.Println(users)
 		SpreadMessage(b, users, sch.Event[ind])
-		fbclient.AddSubscribers(newUsers, sch.Name)
+		fbclient.SetSubscribers(users, sch.Name)
 		fmt.Println("Success")
 	}
 }

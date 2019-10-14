@@ -11,8 +11,8 @@ import (
 	"github.com/orsenkucher/schedulebot/cloudfunc"
 )
 
-// AddSubscribers is public
-func AddSubscribers(users []int64, schName string) {
+// SetSubscribers is public
+func SetSubscribers(users []int64, schName string) {
 	usersstr := []string{}
 
 	for i := 0; i < len(users); i++ {
@@ -25,7 +25,7 @@ func AddSubscribers(users []int64, schName string) {
 	}
 
 	strb, _ := json.Marshal(&que)
-	resp, _ := http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/AddSubscribers", "application/json", bytes.NewBuffer(strb))
+	resp, _ := http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/SetSubscribers", "application/json", bytes.NewBuffer(strb))
 	r, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(r))
 }

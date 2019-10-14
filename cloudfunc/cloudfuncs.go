@@ -92,8 +92,8 @@ func fetchSchedules() []Schedule {
 	return schs
 }
 
-// AddSubscribers is public
-func AddSubscribers(w http.ResponseWriter, r *http.Request) {
+// SetSubscribers is public
+func SetSubscribers(w http.ResponseWriter, r *http.Request) {
 	str, _ := ioutil.ReadAll(r.Body)
 	var querie SubscriberQuerie
 	json.Unmarshal(str, &querie)
@@ -106,10 +106,8 @@ func AddSubscribers(w http.ResponseWriter, r *http.Request) {
 
 	subscribersRef := client.Doc("Subscribers/" + querie.ScheduleName)
 	var subscribers Subscribers
-	docsnap, _ := subscribersRef.Get(ctx)
-	docsnap.DataTo(&subscribers)
 
-	subscribers.IDs = append(subscribers.IDs, querie.IDs...)
+	subscribers.IDs = querie.IDs
 	subscribersRef.Set(ctx, subscribers)
 }
 

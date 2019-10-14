@@ -10,6 +10,7 @@ import (
 	"github.com/orsenkucher/schedulebot/fbclient"
 )
 
+//Generate buttoms by path lik below
 //Mehmat.firstyear.math.group1.subgroup2
 //Custom schedules
 //create kostyl for migalki
