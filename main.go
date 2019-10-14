@@ -22,18 +22,19 @@ import (
 
 func main() {
 	// fbclient.CreateDemoSched()
-	//*
+
+	///*
 	GenerateTestSchedule()
 	fmt.Println("Minuted from week start", cloudfunc.GetMinsOfWeek(time.Now()))
 	table := fbclient.FetchTable()
 	users := fbclient.FetchSubscribers()
 	// fmt.Println(table)
 
-	key, err := creds.ReadToken()
-
-	if err != nil {
-		panic(err)
-	}
+	// key, err := creds.ReadToken()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	key := creds.ReadCr()
 
 	// fmt.Println(key)
 	b := bot.InitBot(key)
@@ -53,7 +54,7 @@ func GenerateTestSchedule() {
 	mins := cloudfunc.GetMinsOfWeek(time.Now())
 	schedule := cloudfunc.Schedule{
 		Name:   "test",
-		Event:  []string{"We started", "Still alive", "Unbelivable", "5 минут,полёт нормальный", "I`ll send you one more in one min if everything is good"},
+		Event:  []string{"We started", "Still alive", "Unbelivable", "5 минут, полёт нормальный", "I`ll send you one more in one min if everything is good"},
 		Minute: []int{mins + 6, mins + 7, mins + 8, mins + 9, mins + 10},
 	}
 	fbclient.SendSchedule(schedule)
