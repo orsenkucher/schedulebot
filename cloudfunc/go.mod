@@ -1,4 +1,4 @@
-module github.com/orsenkucher/schedulebot/cloudfunk
+module github.com/orsenkucher/schedulebot/cloudfunc
 
 go 1.12
 
