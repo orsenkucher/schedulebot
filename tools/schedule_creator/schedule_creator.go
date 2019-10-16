@@ -1,26 +1,17 @@
-package fbclient
+package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"strconv"
 
 	"github.com/orsenkucher/schedulebot/cloudfunc"
+	"github.com/orsenkucher/schedulebot/fbclient"
+	"github.com/orsenkucher/schedulebot/tools"
 )
 
-//DayIndex is indexes
-var DayIndex = map[string]int{
-	"Sun":  0,
-	"Mon":  1,
-	"Tue":  2,
-	"Wed":  3,
-	"Thu":  4,
-	"Fri":  5,
-	"Sat":  6,
-	"STOP": -1}
+func main() {
+	CreateSchedule()
+}
 
 // CreateSchedule is public
 func CreateSchedule() {
@@ -39,7 +30,7 @@ func CreateSchedule() {
 		fmt.Print("WeekDay or 'STOP' if you want to finish: ")
 		var day string
 		fmt.Scanln(&day)
-		wday, exist := DayIndex[day]
+		wday, exist := tools.DayIndex[day]
 		if !exist {
 			continue
 		}
@@ -72,16 +63,5 @@ func CreateSchedule() {
 		}
 	}
 
-	SendSchedule(schedule)
-}
-
-// SendSchedule is public
-func SendSchedule(schedule cloudfunc.Schedule) {
-	strb, _ := json.Marshal(&schedule)
-	fmt.Println("Sending json...")
-	prettystrb, _ := json.MarshalIndent(&schedule, "", "\t")
-	fmt.Println(string(prettystrb))
-	resp, _ := http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/AddSchedule", "application/json", bytes.NewBuffer(strb))
-	r, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(r))
+	fbclient.SendSchedule(schedule)
 }

@@ -1,4 +1,4 @@
-package fbclient
+package main
 
 import (
 	"bytes"
@@ -8,12 +8,18 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/orsenkucher/schedulebot/tools"
+
 	"github.com/orsenkucher/schedulebot/cloudfunc"
 )
 
+func main() {
+	CreateDemoSched()
+}
+
 func invertedDayIndex() map[int]string {
 	res := map[int]string{}
-	for k, v := range DayIndex {
+	for k, v := range tools.DayIndex {
 		res[v] = k
 	}
 	return res
