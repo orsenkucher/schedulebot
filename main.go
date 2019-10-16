@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"os"
 	"time"
 
 	"github.com/orsenkucher/schedulebot/bot"
@@ -46,7 +49,15 @@ func main() {
 		chans[sch.Name] = make(chan bot.SubEvent)
 		go bot.ActivateSchedule(sch, users[sch.Name].IDs, b, chans[sch.Name])
 	}
-	bot.Listen(b, chans)
+	go bot.Listen(b, chans)
+	log.Println("bot listen goroutine started")
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Println("Start serving")
+	http.ListenAndServe("0.0.0.0:"+port, nil)
 	//*/
 	//fbclient.CreateSchedule()
 }
