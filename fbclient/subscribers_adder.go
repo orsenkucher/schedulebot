@@ -17,11 +17,11 @@ func SetSubscribers(users []int64, schName string) {
 		usersstr = append(usersstr, strconv.FormatInt(users[i], 10))
 	}
 
-	que := cloudfunc.SubscriberQuerie{
-		ScheduleName: schName,
-		IDs:          usersstr,
+	subscribers := cloudfunc.Subscribers{
+		Name: schName,
+		IDs:  usersstr,
 	}
 
-	strb, _ := json.Marshal(&que)
+	strb, _ := json.Marshal(&subscribers)
 	http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/SetSubscribers", "application/json", bytes.NewBuffer(strb))
 }
