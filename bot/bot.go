@@ -22,6 +22,10 @@ func InitBot(withKey string) *tgbotapi.BotAPI {
 	bot.Debug = false
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
+	_, err = bot.RemoveWebhook()
+	if err != nil {
+		log.Println("Cant remove webhook")
+	}
 
 	return bot
 }
@@ -35,6 +39,13 @@ func Listen(bot *tgbotapi.BotAPI, chans map[string]chan SubEvent) {
 	if err != nil {
 		log.Panic(err)
 	}
+
+	// port := os.Getenv("PORT")
+	// if port == "" {
+	// 	port = "8080"
+	// }
+	// go log.Fatal(http.ListenAndServe(":"+port, nil))
+	// log.Println("Launched port goroutine")
 
 	for update := range updates {
 		if update.CallbackQuery != nil {
