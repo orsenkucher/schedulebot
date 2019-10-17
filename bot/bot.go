@@ -149,6 +149,7 @@ func handleCallback(
 		case strings.Contains(data, "reset"):
 			fmt.Println(data)
 			go sendOnChan(ch, SubEvent{Action: Del, ChatID: chatID})
+			fbclient.DeleteSubscriber(chatID, scheduleName)
 			snackMsg := "Un️subscribed ☠️"
 			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
 
