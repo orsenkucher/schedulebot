@@ -38,7 +38,7 @@ func fetchSubscribers() map[string]Subscribers {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
+	//sdd
 	schs := map[string]Subscribers{}
 	for _, doc := range docs {
 		sch := Subscribers{}
