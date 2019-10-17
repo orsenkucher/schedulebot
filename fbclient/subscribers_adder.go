@@ -34,5 +34,5 @@ func AddSubscriber(user int64, schName string) {
 	}
 
 	strb, _ := json.Marshal(&subscriberq)
-	http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/SetSubscribers", "application/json", bytes.NewBuffer(strb))
+	http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/AddSubscriber", "application/json", bytes.NewBuffer(strb))
 }

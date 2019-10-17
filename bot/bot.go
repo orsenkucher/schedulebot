@@ -136,12 +136,14 @@ func handleCallback(
 	chans map[string]chan SubEvent) {
 	data := update.CallbackQuery.Data
 	chatID := update.CallbackQuery.Message.Chat.ID
-	ch, ok := chans[strings.Split(data, ":")[1]]
+	scheduleName := strings.Split(data, ":")[1]
+	ch, ok := chans[scheduleName]
 	if ok {
 		switch {
 		case strings.Contains(data, "sub"):
 			fmt.Println(data)
 			go sendOnChan(ch, SubEvent{Action: Add, ChatID: chatID})
+			fbclient.AddSubscriber(chatID, scheduleName)
 			snackMsg := "Our congrats 🥂. We handled your sub!"
 			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
 		case strings.Contains(data, "reset"):
@@ -214,7 +216,6 @@ func ActivateSchedule(sch cloudfunc.Schedule, usersstr []cloudfunc.Subscriber, b
 
 		fmt.Println(users)
 		SpreadMessage(b, users, sch.Event[ind])
-		fbclient.SetSubscribers(users, sch.Name)
 		fmt.Println("Success")
 	}
 }

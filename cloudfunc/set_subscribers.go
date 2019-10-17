@@ -12,7 +12,7 @@ import (
 
 // SubscriberQuerie is public
 type SubscriberQuerie struct {
-	ID           string `firebase:"id" json:"id"`
+	ID           string `firebase:"ID" json:"ID"`
 	ScheduleName string `firebase:"schedulename" json:"schedulename"`
 }
 
@@ -34,16 +34,16 @@ func SetSubscribers(w http.ResponseWriter, r *http.Request) {
 
 // AddSubscriber is public
 func AddSubscriber(w http.ResponseWriter, r *http.Request) {
-	str, _ := ioutil.ReadAll(r.Body)
-	var subscriberq SubscriberQuerie
-	json.Unmarshal(str, &subscriberq)
-
 	ctx := context.Background()
 	client, err := firestore.NewClient(ctx, "scheduleuabot")
 	if err != nil {
 		log.Fatalf("create client: %v", err)
 	}
 
-	subscribersRef := client.Doc("Schedules/" + subscriberq.ScheduleName + "/Subscribers/" + subscriberq.ID)
+	str, _ := ioutil.ReadAll(r.Body)
+	var subscriberq SubscriberQuerie
+	json.Unmarshal(str, &subscriberq)
+
+	subscribersRef := client.Collection("Schedules").Doc(subscriberq.ScheduleName).Collection("Subscribers").Doc(subscriberq.ID)
 	subscribersRef.Set(ctx, Subscriber{ID: subscriberq.ID})
 }

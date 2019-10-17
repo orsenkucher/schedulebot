@@ -1,12 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
-	"github.com/orsenkucher/schedulebot/bot"
 	"github.com/orsenkucher/schedulebot/cloudfunc"
-	"github.com/orsenkucher/schedulebot/creds"
 	"github.com/orsenkucher/schedulebot/fbclient"
 )
 
@@ -25,7 +22,7 @@ func main() {
 
 	///*
 	GenerateTestSchedule()
-	fmt.Println("Minuted from week start", cloudfunc.GetMinsOfWeek(time.Now()))
+	/*fmt.Println("Minuted from week start", cloudfunc.GetMinsOfWeek(time.Now()))
 	table := fbclient.FetchTable()
 	users := fbclient.FetchSubscribers()
 	// fmt.Println(table)
@@ -58,5 +55,6 @@ func GenerateTestSchedule() {
 		Minute: []int{mins + 6, mins + 7, mins + 8, mins + 9, mins + 10},
 	}
 	fbclient.SendSchedule(schedule)
-	fbclient.SetSubscribers([]int64{259224772, 364448153}, "test")
+	//fbclient.AddSubscriber(259224772, "test")
+	fbclient.AddSubscriber(364448153, "test")
 }
