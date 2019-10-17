@@ -170,10 +170,10 @@ func SpreadMessage(b *tgbotapi.BotAPI, users []int64, msg string) error {
 }
 
 // ActivateSchedule is public
-func ActivateSchedule(sch cloudfunc.Schedule, usersstr []string, b *tgbotapi.BotAPI, ch chan SubEvent) {
+func ActivateSchedule(sch cloudfunc.Schedule, usersstr []cloudfunc.Subscriber, b *tgbotapi.BotAPI, ch chan SubEvent) {
 	users := []int64{}
 	for i := 0; i < len(usersstr); i++ {
-		n, _ := strconv.ParseInt(usersstr[i], 10, 64)
+		n, _ := strconv.ParseInt(usersstr[i].ID, 10, 64)
 		users = append(users, n)
 	}
 	for {

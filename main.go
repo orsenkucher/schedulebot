@@ -42,7 +42,7 @@ func main() {
 
 	for _, sch := range table {
 		chans[sch.Name] = make(chan bot.SubEvent)
-		go bot.ActivateSchedule(sch, users[sch.Name].IDs, b, chans[sch.Name])
+		go bot.ActivateSchedule(sch, users[sch.Name], b, chans[sch.Name])
 	}
 	bot.Listen(b, chans)
 	//*/
