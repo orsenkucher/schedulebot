@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -72,30 +71,17 @@ func CreateSchedule() {
 		}
 	}
 
-	SendSchedule(schedule)
+	SendSchedule(&schedule)
 }
 
-// SendSchedule is public
-func SendSchedule(schedule cloudfunc.Schedule) {
-	strb, _ := json.Marshal(&schedule)
-	fmt.Println("Sending json...")
-	prettystrb, _ := json.MarshalIndent(&schedule, "", "\t")
-	fmt.Println(string(prettystrb))
-	resp, _ := http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/AddSchedule", "application/json", bytes.NewBuffer(strb))
-	r, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(r))
-}
-
-// SendScheduleGo is SendSchedule wrapper
-func SendScheduleGo(schedule *cloudfunc.Schedule, doneCh chan<- struct{}) {
+// SendSchedule sends Schedule to firestore
+func SendSchedule(schedule *cloudfunc.Schedule) {
 	strb, _ := json.Marshal(schedule)
-	fmt.Println("Sending json...")
-	prettystrb, _ := json.MarshalIndent(schedule, "", "\t")
-	fmt.Println(string(prettystrb))
+	fmt.Printf("Sending %v bytes of %s schedule\n", len(strb), schedule.Name)
+	// prettystrb, _ := json.MarshalIndent(schedule, "", "\t")
+	// fmt.Println(string(prettystrb))
 	_, err := http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/AddSchedule", "application/json", bytes.NewBuffer(strb))
 	if err != nil {
 		panic(err)
 	}
-	doneCh <- struct{}{}
-	close(doneCh)
 }

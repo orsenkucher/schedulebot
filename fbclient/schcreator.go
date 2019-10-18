@@ -28,8 +28,6 @@ type Schedule struct {
 
 // CreateSchFromJSON is schedule creator v2, that read data from json
 func CreateSchFromJSON() {
-	var wg sync.WaitGroup
-
 	bytes, err := readJSON(schFile)
 	if err != nil {
 		panic(err)
@@ -37,8 +35,28 @@ func CreateSchFromJSON() {
 
 	var schs []Schedule
 	json.Unmarshal(bytes, &schs)
-	fmt.Println(schs)
+	// fmt.Println(schs)
+	fireSchs := makeFirestoreSchedules(schs)
 
+	count := len(fireSchs)
+	var wg sync.WaitGroup
+	wg.Add(count)
+
+	fmt.Printf("Sending %v fire schedules\n", count)
+	for i := 0; i < count; i++ {
+		go func(fsch *cloudfunc.Schedule) {
+			SendSchedule(fsch)
+			fmt.Println("Sent " + fsch.Name)
+			wg.Done()
+		}(&fireSchs[i]) // it is safe to path pointer
+	}
+
+	fmt.Println("Waiting for cloud functions")
+	wg.Wait()
+}
+
+func makeFirestoreSchedules(schs []Schedule) []cloudfunc.Schedule {
+	fireSchs := make([]cloudfunc.Schedule, 0, len(schs))
 	for _, sch := range schs {
 		schedule := cloudfunc.Schedule{
 			Name:   sch.Name,
@@ -65,21 +83,9 @@ func CreateSchFromJSON() {
 			schedule.Event = append(schedule.Event, e.Title)
 			schedule.Minute = append(schedule.Minute, dayIdx*24*60+hour*60+minute)
 		}
-
-		wg.Add(1)
-		fmt.Printf("Sending %v\n", schedule)
-		doneCh := make(chan struct{})
-		go func(doneCh <-chan struct{}, wg *sync.WaitGroup) {
-			for range doneCh {
-				fmt.Println("Sent " + schedule.Name)
-				wg.Done()
-			}
-		}(doneCh, &wg)
-		go SendScheduleGo(&schedule, doneCh)
+		fireSchs = append(fireSchs, schedule)
 	}
-
-	fmt.Println("Waiting for cloud functions")
-	wg.Wait()
+	return fireSchs
 }
 
 func readJSON(path string) ([]byte, error) {

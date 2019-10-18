@@ -22,7 +22,7 @@ import (
 //
 
 func main() {
-	// fbclient.CreateSchFromJSON()
+	fbclient.CreateSchFromJSON()
 
 	// /*
 	GenerateTestSchedule()
@@ -52,7 +52,7 @@ func GenerateTestSchedule() {
 		Event:  []string{"We started", "Still alive", "Unbelivable", "5 минут, полёт нормальный", "I`ll send you one more in one min if everything is good"},
 		Minute: []int{mins + 6, mins + 7, mins + 8, mins + 9, mins + 10},
 	}
-	fbclient.SendSchedule(schedule)
+	fbclient.SendSchedule(&schedule)
 	//fbclient.AddSubscriber(259224772, "test")
 	fbclient.AddSubscriber(364448153, "test")
 }
