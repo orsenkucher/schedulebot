@@ -11,13 +11,14 @@ import (
 )
 
 // *** ASAP ***
-//Respond to callbackQuery !
+// Reliable subscription!
+// Migalky (spin[up/down])
 //
 // *** Proposals ***
-//Generate buttoms by path lik below
-//Mehmat.firstyear.math.group1.subgroup2
-//Custom schedules
-//create kostyl for migalki
+// Use hash to determine whether sch update is needed
+// Generate buttoms by path like below
+// Ukraine?.Mehmat.firstyear.math.group1.subgroup2
+// Custom schedules
 //
 
 func main() {
