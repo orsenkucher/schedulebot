@@ -1,14 +1,9 @@
 package fbclient
 
 import (
-	"bytes"
-	"crypto/sha1"
-	"encoding/base64"
-	"encoding/gob"
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/orsenkucher/schedulebot/cloudfunc"
 )
@@ -77,29 +72,15 @@ func CreateSchedule() {
 	SendSchedule(&schedule)
 }
 
-// SendSchedule sends Schedule to firestore
-func SendSchedule(schedule *cloudfunc.Schedule) {
-	schedule.Hash64 = calcSchHashAsBase64(schedule)
-	strb, _ := json.Marshal(schedule)
-	fmt.Printf("Sending %v bytes of %s schedule\n", len(strb), schedule.Name)
-	// prettystrb, _ := json.MarshalIndent(schedule, "", "\t")
-	// fmt.Println(string(prettystrb))
-	_, err := http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/AddSchedule", "application/json", bytes.NewBuffer(strb))
-	if err != nil {
-		panic(err)
+//GenerateTestSchedule is test
+func GenerateTestSchedule() {
+	mins := cloudfunc.GetMinsOfWeek(time.Now().UTC())
+	schedule := cloudfunc.Schedule{
+		Name:   "test",
+		Event:  []string{"We started", "Still alive", "Unbelivable", "5 минут, полёт нормальный", "I`ll send you one more in one min if everything is good"},
+		Minute: []int{mins + 6, mins + 7, mins + 8, mins + 9, mins + 10},
 	}
-}
-
-func calcSchHashAsBase64(sch *cloudfunc.Schedule) string {
-	var b bytes.Buffer
-	enc := gob.NewEncoder(&b)
-	if err := enc.Encode(sch); err != nil {
-		panic(err)
-	}
-	bytes := b.Bytes()
-	sha := sha1.New()
-	sha.Write(bytes)
-	bytes = sha.Sum(nil)
-	b64 := base64.StdEncoding.EncodeToString(bytes)
-	return b64
+	SendSchedule(&schedule)
+	//fbclient.AddSubscriber(259224772, "test")
+	AddSubscriber(364448153, "test")
 }

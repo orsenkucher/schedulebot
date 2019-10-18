@@ -221,15 +221,17 @@ func ActivateSchedule(sch cloudfunc.Schedule, usersstr []cloudfunc.Subscriber, b
 	}
 }
 
+// MPW is total minutes in week
+const MPW = 7 * 60 * 24
+
 func calcNextSchedule(s cloudfunc.Schedule) (time.Duration, int) {
-	const mpw = 7 * 60 * 24
-	now := time.Now().UTC().Add(3 * time.Hour)
+	now := time.Now().UTC()
 	mins := cloudfunc.GetMinsOfWeek(now)
 	nextEvent := 0
-	minMins := mpw
+	minMins := MPW
 
 	for i := 0; i < len(s.Event); i++ {
-		curmins := (s.Minute[i] - 5 - mins + mpw) % mpw
+		curmins := (s.Minute[i] - 5 - mins + MPW) % MPW
 		if minMins > curmins && curmins != 0 {
 			nextEvent = i
 			minMins = curmins

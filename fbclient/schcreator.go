@@ -67,6 +67,7 @@ func makeFirestoreSchedules(schs []Schedule) []cloudfunc.Schedule {
 			if !ok {
 				panic("Invalid Day on " + e.Title)
 			}
+
 			timePair := strings.Split(e.Time, ":")
 			if len(timePair) != 2 {
 				panic("Invalid Time on " + e.Title)
@@ -75,18 +76,21 @@ func makeFirestoreSchedules(schs []Schedule) []cloudfunc.Schedule {
 			if err != nil {
 				panic("Invalid Hour on " + e.Title)
 			}
-
 			minute, err := strconv.Atoi(timePair[1])
 			if err != nil {
 				panic("Invalid Minute on " + e.Title)
 			}
+
 			schedule.Event = append(schedule.Event, e.Title)
-			schedule.Minute = append(schedule.Minute, dayIdx*24*60+hour*60+minute)
+			schedule.Minute = append(schedule.Minute, (dayIdx*24*60+(hour-3)*60+minute+MPW)%MPW)
 		}
 		fireSchs = append(fireSchs, schedule)
 	}
 	return fireSchs
 }
+
+// MPW is total minutes in week
+const MPW = 7 * 60 * 24
 
 func readJSON(path string) ([]byte, error) {
 	j, err := ioutil.ReadFile(schFile)
