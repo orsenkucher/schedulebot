@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -57,7 +58,33 @@ func main() {
 		port = "8080"
 	}
 	log.Println("Start serving")
-	http.ListenAndServe("0.0.0.0:"+port, nil)
+	go http.ListenAndServe("0.0.0.0:8443", heh2{})
+	log.Println("Start serving-2")
+	http.ListenAndServe("0.0.0.0:"+port, heh{})
+	// http.HandleFunc
 	//*/
 	//fbclient.CreateSchedule()
+}
+
+type heh struct{}
+
+func (h heh) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	bytes, _ := ioutil.ReadAll(r.Body)
+	r.Body.Close()
+
+	log.Println(port + " rec: " + string(bytes))
+}
+
+type heh2 struct{}
+
+func (h heh2) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	bytes, _ := ioutil.ReadAll(r.Body)
+	r.Body.Close()
+
+	log.Println("8443" + " rec: " + string(bytes))
 }

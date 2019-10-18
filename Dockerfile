@@ -6,4 +6,8 @@ RUN go build -v -o /app main.go
 
 FROM gcr.io/distroless/base
 COPY --from=build /app /app
+
+EXPOSE 8443
+EXPOSE 8080
+
 CMD ["/app"]

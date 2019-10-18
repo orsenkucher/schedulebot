@@ -27,42 +27,51 @@ func InitBot(withKey string) *tgbotapi.BotAPI {
 		log.Println("Cant remove webhook")
 	}
 
+	// https://schedulebot-x2gm2h2g4a-uc.a.run.app
+	hook := tgbotapi.NewWebhook("https://schedulebot-x2gm2h2g4a-uc.a.run.app:8443/" + bot.Token)
+	_, err = bot.SetWebhook(hook)
+	if err != nil {
+		log.Fatal(err)
+	}
+	info, err := bot.GetWebhookInfo()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if info.LastErrorDate != 0 {
+		log.Printf("Telegram callback failed: %s", info.LastErrorMessage)
+	}
+
 	return bot
 }
 
 // Listen starts infinite listening
 func Listen(bot *tgbotapi.BotAPI, chans map[string]chan SubEvent) {
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
+	// u := tgbotapi.NewUpdate(0)
+	// u.Timeout = 60
 
 	updates, err := bot.GetUpdatesChan(u)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	// port := os.Getenv("PORT")
-	// if port == "" {
-	// 	port = "8080"
+	// if err != nil {
+	// 	log.Panic(err)
 	// }
-	// go log.Fatal(http.ListenAndServe(":"+port, nil))
-	// log.Println("Launched port goroutine")
 
-	for update := range updates {
-		if update.CallbackQuery != nil {
-			handleCallback(bot, update, chans)
-			continue
-		}
+	// updates := bot.ListenForWebhook("/" + bot.Token)
 
-		if update.Message != nil {
-			if update.Message.IsCommand() {
-				handleCommand(bot, update)
-			} else if update.Message.Text != "" {
-				handleMessage(bot, update)
-			}
-			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-			continue
-		}
-	}
+	// for update := range updates {
+	// 	if update.CallbackQuery != nil {
+	// 		handleCallback(bot, update, chans)
+	// 		continue
+	// 	}
+
+	// 	if update.Message != nil {
+	// 		if update.Message.IsCommand() {
+	// 			handleCommand(bot, update)
+	// 		} else if update.Message.Text != "" {
+	// 			handleMessage(bot, update)
+	// 		}
+	// 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+	// 		continue
+	// 	}
+	// }
 }
 
 func handleMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
