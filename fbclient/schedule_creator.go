@@ -85,3 +85,17 @@ func SendSchedule(schedule cloudfunc.Schedule) {
 	r, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(r))
 }
+
+// SendScheduleGo is SendSchedule wrapper
+func SendScheduleGo(schedule *cloudfunc.Schedule, doneCh chan<- struct{}) {
+	strb, _ := json.Marshal(schedule)
+	fmt.Println("Sending json...")
+	prettystrb, _ := json.MarshalIndent(schedule, "", "\t")
+	fmt.Println(string(prettystrb))
+	_, err := http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/AddSchedule", "application/json", bytes.NewBuffer(strb))
+	if err != nil {
+		panic(err)
+	}
+	doneCh <- struct{}{}
+	close(doneCh)
+}

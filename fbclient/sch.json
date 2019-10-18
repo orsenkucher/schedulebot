@@ -1,0 +1,27 @@
+[
+    {
+        "name": "Hello",
+        "events": [
+            {
+                "title": "World",
+                "day":"Fri",
+                "time": "12:20"
+            },
+            {
+                "title": "Bot proging (234), Quiz proging (54)",
+                "day":"Sun",
+                "time": "0:0"
+            }
+        ]
+    },
+     {
+        "name": "Hello-2",
+        "events": [
+            {
+                "title": "World-2",
+                "day":"Tue",
+                "time": "22:00"
+            }
+        ]
+    }
+]

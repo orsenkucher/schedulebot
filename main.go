@@ -21,23 +21,17 @@ import (
 //
 
 func main() {
-	// fbclient.CreateDemoSched()
+	// fbclient.CreateSchFromJSON()
 
-	///*
+	// /*
 	GenerateTestSchedule()
 	fmt.Println("Minuted from week start", cloudfunc.GetMinsOfWeek(time.Now()))
 	table := fbclient.FetchTable()
 	users := fbclient.FetchSubscribers()
-	// fmt.Println(table)
 
-	// key, err := creds.ReadToken()
-	// if err != nil {
-	// 	panic(err)
-	// }
 	key := creds.ReadCr()
-
-	// fmt.Println(key)
 	b := bot.InitBot(key)
+
 	chans := map[string]chan bot.SubEvent{}
 
 	for _, sch := range table {
