@@ -11,11 +11,11 @@ import (
 const fetchSubscURL = "https://us-central1-scheduleuabot.cloudfunctions.net/FetchSubscribers"
 
 // FetchSubscribers is public
-func FetchSubscribers() map[string]cloudfunc.Subscribers {
+func FetchSubscribers() map[string][]cloudfunc.Subscriber {
 	resp, _ := http.Get(fetchSubscURL)
 	r, _ := ioutil.ReadAll(resp.Body)
 	// fmt.Println(string(r))
-	var table map[string]cloudfunc.Subscribers
-	json.Unmarshal(r, &table)
-	return table
+	var subs map[string][]cloudfunc.Subscriber
+	json.Unmarshal(r, &subs)
+	return subs
 }

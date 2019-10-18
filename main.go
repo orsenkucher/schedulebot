@@ -42,7 +42,7 @@ func main() {
 
 	for _, sch := range table {
 		chans[sch.Name] = make(chan bot.SubEvent)
-		go bot.ActivateSchedule(sch, users[sch.Name].IDs, b, chans[sch.Name])
+		go bot.ActivateSchedule(sch, users[sch.Name], b, chans[sch.Name])
 	}
 	bot.Listen(b, chans)
 	//*/
@@ -58,5 +58,6 @@ func GenerateTestSchedule() {
 		Minute: []int{mins + 6, mins + 7, mins + 8, mins + 9, mins + 10},
 	}
 	fbclient.SendSchedule(schedule)
-	fbclient.SetSubscribers([]int64{259224772, 364448153}, "test")
+	//fbclient.AddSubscriber(259224772, "test")
+	fbclient.AddSubscriber(364448153, "test")
 }

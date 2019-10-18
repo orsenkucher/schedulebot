@@ -30,8 +30,4 @@ func AddSchedule(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("create client: %v", err)
 	}
 	client.Doc("Schedules/"+schedule.Name).Set(ctx, schedule)
-	client.Doc("Subscribers/"+schedule.Name).Set(ctx, Subscribers{
-		Name: schedule.Name,
-		IDs:  []string{},
-	})
 }

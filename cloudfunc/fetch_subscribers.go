@@ -16,6 +16,11 @@ type Subscribers struct {
 	IDs  []string `firebase:"IDs" json:"IDs"`
 }
 
+//Subscriber is public
+type Subscriber struct {
+	ID string `firebase:"ID" json:"ID"`
+}
+
 //FetchSubscribers returns subscribers
 func FetchSubscribers(w http.ResponseWriter, r *http.Request) {
 	schs := fetchSubscribers()
@@ -26,28 +31,34 @@ func FetchSubscribers(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(js))
 }
 
-func fetchSubscribers() map[string]Subscribers {
+func fetchSubscribers() map[string][]Subscriber {
 	ctx := context.Background()
 	client, err := firestore.NewClient(ctx, "scheduleuabot")
 	if err != nil {
 		log.Fatalf("create client: %v", err)
 	}
 
-	docsIter := client.Collection("Subscribers").Documents(ctx)
+	docsIter := client.Collection("Schedules").DocumentRefs(ctx)
 	docs, err := docsIter.GetAll()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	schs := map[string]Subscribers{}
+	subs := map[string][]Subscriber{}
 	for _, doc := range docs {
-		sch := Subscribers{}
-		err := doc.DataTo(&sch)
-		if err != nil {
-			log.Fatalln(err)
+		subsList := []Subscriber{}
+		subsIter := doc.Collection("Subscribers").Documents(ctx)
+		subsDocs, err := subsIter.GetAll()
+
+		if err == nil {
+			for _, subsDoc := range subsDocs {
+				var sub Subscriber
+				subsDoc.DataTo(&sub)
+				subsList = append(subsList, sub)
+			}
 		}
-		schs[sch.Name] = sch
+		subs[doc.ID] = subsList
 	}
 
-	return schs
+	return subs
 }
