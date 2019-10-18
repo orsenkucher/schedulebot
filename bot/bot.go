@@ -66,16 +66,17 @@ func Listen(bot *tgbotapi.BotAPI, chans map[string]chan SubEvent) {
 }
 
 func handleMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-	if _, err := bot.Send(msg); err != nil {
-		log.Panic(err)
-	}
+	// // Do nothing
+	// msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+	// if _, err := bot.Send(msg); err != nil {
+	// 	log.Panic(err)
+	// }
 }
 
 var inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData(" 🥞 1 група  ", "sub:group1"),
-		tgbotapi.NewInlineKeyboardButtonData(" 🍇 2 група  ", "sub:group2"),
+		tgbotapi.NewInlineKeyboardButtonData(" 👽 1 група  ", "sub:group1"), // 👽 🔴
+		tgbotapi.NewInlineKeyboardButtonData(" 👾 2 група  ", "sub:group2"), //👥  🔵 👾
 	),
 	// tgbotapi.NewInlineKeyboardRow(
 	// 	tgbotapi.NewInlineKeyboardButtonData(" 🤹 demo  ", "sub:test"),
@@ -84,25 +85,25 @@ var inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var inlineResetKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData(" 🖕🏾 1 група  ", "reset:group1"),
-		tgbotapi.NewInlineKeyboardButtonData(" 🖕🏾 2 група  ", "reset:group2"),
+		tgbotapi.NewInlineKeyboardButtonData(" ♻️ 1 група  ", "reset:group1"),
+		tgbotapi.NewInlineKeyboardButtonData(" ♻️ 2 група  ", "reset:group2"),
 	),
 	// tgbotapi.NewInlineKeyboardRow(
-	// 	tgbotapi.NewInlineKeyboardButtonData(" 🖕🏾 demo  ", "reset:test"),
+	// 	tgbotapi.NewInlineKeyboardButtonData(" ♻️ demo  ", "reset:test"),
 	// ),
 )
 
 func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	switch update.Message.Command() {
 	case "sub", "start", "go":
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Go!")
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "🎓 Subscribe!") // ⬇️
 		msg.ReplyMarkup = inlineKeyboard
 		if _, err := bot.Send(msg); err != nil {
 			log.Panic(err)
 		}
-	case "reset":
+	case "reset", "unsub":
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID,
-			"Doing reset for "+update.Message.Chat.FirstName)
+			"Unsub options ("+update.Message.Chat.FirstName+")")
 		msg.ReplyMarkup = inlineResetKeyboard
 		fmt.Println("Doing reset for user", update.Message.Chat.ID)
 		if _, err := bot.Send(msg); err != nil {
@@ -150,7 +151,7 @@ func handleCallback(
 			fmt.Println(data)
 			go sendOnChan(ch, SubEvent{Action: Del, ChatID: chatID})
 			fbclient.DeleteSubscriber(chatID, scheduleName)
-			snackMsg := "Un️subscribed ☠️"
+			snackMsg := "Un️subscribed ♻️" // ☠️
 			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
 
 		}
