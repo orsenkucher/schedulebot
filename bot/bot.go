@@ -75,8 +75,8 @@ func handleMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 var inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData(" 👽 1 група  ", "sub:group1"), // 👽 🔴
-		tgbotapi.NewInlineKeyboardButtonData(" 👾 2 група  ", "sub:group2"), //👥  🔵 👾
+		tgbotapi.NewInlineKeyboardButtonData(" 📆 1 група  ", "sub:group1"), // 👽 🔴
+		tgbotapi.NewInlineKeyboardButtonData(" 📆 2 група  ", "sub:group2"), //👥  🔵 👾 ⏱️
 	),
 	// tgbotapi.NewInlineKeyboardRow(
 	// 	tgbotapi.NewInlineKeyboardButtonData(" 🤹 demo  ", "sub:test"),
@@ -96,14 +96,14 @@ var inlineResetKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	switch update.Message.Command() {
 	case "sub", "start", "go":
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "🎓 Subscribe!") // ⬇️
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбери свое расписание👇🏻") // ⬇️ 🎓 👇🏻
 		msg.ReplyMarkup = inlineKeyboard
 		if _, err := bot.Send(msg); err != nil {
 			log.Panic(err)
 		}
 	case "reset", "unsub":
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID,
-			"Unsub options ("+update.Message.Chat.FirstName+")")
+			"Варианты отписки ("+update.Message.Chat.FirstName+")") // Unsub options ("+update.Message.Chat.FirstName+")"
 		msg.ReplyMarkup = inlineResetKeyboard
 		fmt.Println("Doing reset for user", update.Message.Chat.ID)
 		if _, err := bot.Send(msg); err != nil {
