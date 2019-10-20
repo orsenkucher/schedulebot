@@ -21,6 +21,31 @@ func invertedDayIndex() map[int]string {
 
 // CreateDemoSched creates demo schedule on firestore
 func CreateDemoSched() {
+	schedule := createDemoSched()
+
+	strb, err := json.Marshal(&schedule)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(string(strb))
+
+	fmt.Println("Sending json...")
+	resp, err := http.Post(addSchURL, "application/json", bytes.NewBuffer(strb))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+
+	r, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println(string(r))
+	fmt.Println("done")
+}
+
+func createDemoSched() cloudfunc.Schedule {
 	schedule := cloudfunc.Schedule{
 		Name:   "demo",
 		Event:  []string{},
@@ -37,24 +62,5 @@ func CreateDemoSched() {
 			}
 		}
 	}
-
-	fmt.Println("Sending json...")
-
-	strb, err := json.Marshal(&schedule)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	fmt.Println(string(strb))
-	resp, err := http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/AddSchedule",
-		"application/json", bytes.NewBuffer(strb))
-	if err != nil {
-		log.Fatalln(err)
-	}
-	r, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	fmt.Println(string(r))
-	fmt.Println("done")
+	return schedule
 }

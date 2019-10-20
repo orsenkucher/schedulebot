@@ -12,6 +12,8 @@ import (
 	"github.com/orsenkucher/schedulebot/cloudfunc"
 )
 
+const addSchURL = "https://us-central1-scheduleuabot.cloudfunctions.net/AddSchedule"
+
 // SendSchedule sends Schedule to firestore
 func SendSchedule(schedule *cloudfunc.Schedule) {
 	schedule.Hash64 = calcSchHashAsBase64(schedule)
@@ -19,7 +21,7 @@ func SendSchedule(schedule *cloudfunc.Schedule) {
 	fmt.Printf("Sending %v bytes of %s schedule\n", len(strb), schedule.Name)
 	// prettystrb, _ := json.MarshalIndent(schedule, "", "\t")
 	// fmt.Println(string(prettystrb))
-	_, err := http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/AddSchedule", "application/json", bytes.NewBuffer(strb))
+	_, err := http.Post(addSchURL, "application/json", bytes.NewBuffer(strb))
 	if err != nil {
 		panic(err)
 	}
