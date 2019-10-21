@@ -81,6 +81,6 @@ func GenerateTestSchedule() {
 		Minute: []int{mins + 6, mins + 7, mins + 8, mins + 9, mins + 10},
 	}
 	SendSchedule(&schedule)
-	//fbclient.AddSubscriber(259224772, "test")
-	AddSubscriber(364448153, "test")
+	// AddSubscriber(259224772, "test")
+	// AddSubscriber(364448153, "test")
 }

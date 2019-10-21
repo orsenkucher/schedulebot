@@ -93,6 +93,12 @@ var inlineResetKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	// ),
 )
 
+var cmdMapping = map[string]string{
+	"sub:group1":   "1 група",
+	"sub:group2":   "2 група",
+	"reset:group1": "1 група",
+	"reset:group2": "2 група"}
+
 func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	switch update.Message.Command() {
 	case "sub", "start", "go":
@@ -145,15 +151,24 @@ func handleCallback(
 			fmt.Println(data)
 			go sendOnChan(ch, SubEvent{Action: Add, ChatID: chatID})
 			fbclient.AddSubscriber(chatID, scheduleName)
-			snackMsg := "Our congrats 🥂. We handled your sub!"
+			// snackMsg := "Our congrats 🥂. We handled your sub!"
+			snackMsg := "Ваша регистрация обработана 🥂 (" + cmdMapping[data] + ")"
 			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
+			msg := tgbotapi.NewMessage(chatID, snackMsg)
+			if _, err := bot.Send(msg); err != nil {
+				log.Println(err)
+			}
 		case strings.Contains(data, "reset"):
 			fmt.Println(data)
 			go sendOnChan(ch, SubEvent{Action: Del, ChatID: chatID})
 			fbclient.DeleteSubscriber(chatID, scheduleName)
-			snackMsg := "Un️subscribed ♻️" // ☠️
+			// snackMsg := "Un️subscribed ♻️" // ☠️
+			snackMsg := "Отписка проведена ♻️ (" + cmdMapping[data] + ")"
 			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
-
+			msg := tgbotapi.NewMessage(chatID, snackMsg)
+			if _, err := bot.Send(msg); err != nil {
+				log.Println(err)
+			}
 		}
 	}
 }
@@ -163,14 +178,18 @@ func sendOnChan(ch chan SubEvent, e SubEvent) {
 }
 
 // SpreadMessage is public
-func SpreadMessage(b *tgbotapi.BotAPI, users []int64, msg string) error {
+func SpreadMessage(b *tgbotapi.BotAPI, users []int64, msg string) {
+	log.Printf("Sending message to %v users\n", len(users))
 	for _, u := range users {
+		time.Sleep(100 * time.Millisecond)
 		tgmsg := tgbotapi.NewMessage(u, msg)
+		log.Printf("Sending to %v\n", u)
 		if _, err := b.Send(tgmsg); err != nil {
-			return err
+			log.Println(err)
+			// return err
 		}
 	}
-	return nil
+	// return nil
 }
 
 // ActivateSchedule is public
