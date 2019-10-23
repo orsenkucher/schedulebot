@@ -153,7 +153,7 @@ func handleCallback(
 			fbclient.AddSubscriber(chatID, scheduleName)
 			// snackMsg := "Our congrats 🥂. We handled your sub!"
 			// Поздравляю! Ты подписался на бота! До скорых встреч на паре!
-			snackMsg := "Поздравляю! Ты подписался на " + cmdMapping[data] + ". Увидимся на паре 🥂"
+			snackMsg := "Поздравляю! Ты подписался на \"" + cmdMapping[data] + "\". Увидимся на паре 🥂"
 			// snackMsg := "Ваша регистрация обработана 🥂 (" + cmdMapping[data] + ")"
 			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
 			msg := tgbotapi.NewMessage(chatID, snackMsg)
