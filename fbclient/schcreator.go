@@ -82,7 +82,7 @@ func makeFirestoreSchedules(schs []Schedule) []cloudfunc.Schedule {
 			}
 
 			schedule.Event = append(schedule.Event, e.Title)
-			schedule.Minute = append(schedule.Minute, (dayIdx*24*60+(hour-3)*60+minute+MPW)%MPW)
+			schedule.Minute = append(schedule.Minute, (dayIdx*24*60+(hour-2)*60+minute+MPW)%MPW)
 		}
 		fireSchs = append(fireSchs, schedule)
 	}
