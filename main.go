@@ -12,35 +12,34 @@ import (
 )
 
 // *** ASAP ***
-// Migalky (spin[up/down]) // for now just delete all spin="up" from sch.json 20.10.19 is "down" week
-// Append sch.json with schs for Thu and Fri
+// [.] Migalky (spin[up/down]) // for now just delete all spin="up" from sch.json 20.10.19 is "down" week
+// [+] Append sch.json with schs for Thu and Fri
 //
 // *** Proposals ***
-// Use hash to determine whether sch update is needed
-// Generate buttoms by path like below
-// Ukraine?.Mehmat.firstyear.math.group1.subgroup2
-// Custom schedules
+// [.] Use hash to determine whether sch update is needed
+// [.] Generate buttons by path like below
+//     Ukraine?.Mehmat.firstyear.math.group1.subgroup2
+// [.] Custom schedules
 //
 
 func main() {
 	// fbclient.CreateSchFromJSON()
 
 	// /*
-	fbclient.GenerateTestSchedule()
+	// fbclient.GenerateTestSchedule()
 	fmt.Println("Minutes from week start", cloudfunc.GetMinsOfWeek(time.Now()))
 	table := fbclient.FetchTable()
 	users := fbclient.FetchSubscribers()
 
-	cr := creds.Cr459.String()
-	b := bot.InitBot(cr)
+	b := bot.NewBot(creds.Cr459)
 
 	chans := map[string]chan bot.SubEvent{}
 
 	for _, sch := range table {
 		chans[sch.Name] = make(chan bot.SubEvent)
-		go bot.ActivateSchedule(sch, users[sch.Name], b, chans[sch.Name])
+		go b.ActivateSchedule(sch, users[sch.Name], chans[sch.Name])
 	}
-	bot.Listen(b, chans)
+	b.Listen(chans)
 	//*/
 	//fbclient.CreateSchedule()
 }
