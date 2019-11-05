@@ -69,27 +69,6 @@ func (b *Bot) Listen(chans map[string]chan SubEvent) {
 	}
 }
 
-// SubEvent represents subscription event
-type SubEvent struct {
-	ChatID int64
-	Action SubAction
-}
-
-// SubAction represents user action
-type SubAction int
-
-// Add is when user Success
-// Del is when user unsubbed
-const (
-	_ SubAction = iota
-	Add
-	Del
-)
-
-func sendOnChan(ch chan SubEvent, e SubEvent) {
-	ch <- e
-}
-
 // SpreadMessage is public
 func (b *Bot) SpreadMessage(users []int64, msg string) {
 	log.Printf("Sending message to %v users\n", len(users))
