@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/orsenkucher/schedulebot/route"
 )
 
 var inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
@@ -28,12 +29,12 @@ var cmdMapping = map[string]string{
 }
 
 // GenFor generates keyboard for provided route
-func GenFor(route *routeTree) tgbotapi.InlineKeyboardMarkup {
-	buttons := make([]tgbotapi.InlineKeyboardButton, len(route.children))
-	for i, c := range route.children {
-		buttons[i] = tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf(" 📆 %s  ", c.name), "route:"+c.name)
+func GenFor(route *route.Tree) tgbotapi.InlineKeyboardMarkup {
+	buttons := make([]tgbotapi.InlineKeyboardButton, len(route.Children))
+	for i, c := range route.Children {
+		buttons[i] = tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf(" 📆 %s  ", c.Name), "route:"+c.Name)
 	}
-	if route.parent != nil {
+	if route.Parent != nil {
 		buttons = append([]tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(" 🔙 Back  ", "back:")}, buttons...)
 	}
 	return tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(buttons...))

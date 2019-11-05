@@ -7,7 +7,11 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/orsenkucher/schedulebot/fbclient"
+	"github.com/orsenkucher/schedulebot/route"
+	"github.com/orsenkucher/schedulebot/user"
 )
+
+var currentRoutes = make(map[user.User]*route.Tree)
 
 // SubEvent represents subscription event
 type SubEvent struct {
@@ -41,9 +45,9 @@ func handleMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	switch update.Message.Command() {
 	case "sub", "start", "go":
-		user := user(update.Message.Chat.ID)
+		user := user.User(update.Message.Chat.ID)
 		msg := tgbotapi.NewMessage(int64(user), "Выбери свое расписание👇🏻") // ⬇️ 🎓 👇🏻
-		currentRoutes[user] = Routes
+		currentRoutes[user] = route.Routes
 		msg.ReplyMarkup = GenFor(currentRoutes[user])
 		if _, err := bot.Send(msg); err != nil {
 			log.Panic(err)
@@ -67,29 +71,38 @@ func handleCallback(
 	chans map[string]chan SubEvent) {
 	data := update.CallbackQuery.Data
 	chatID := update.CallbackQuery.Message.Chat.ID
+	messageID := update.CallbackQuery.Message.MessageID
 	switch {
 	case strings.Contains(data, "route"):
 		fmt.Println(data)
 		childName := strings.Split(data, ":")[1]
-		user := user(chatID)
+		user := user.User(chatID)
 		if route, ok := currentRoutes[user]; ok {
-			msg := tgbotapi.NewMessage(int64(user), route.name+" выбери свое расписание👇🏻") // ⬇️ 🎓 👇🏻
-			childRoute, err := route.Select(childName)
-			if err == nil {
-				msg.ReplyMarkup = GenFor(childRoute)
+			if childRoute, ok := route.Select(childName); ok {
+				msg := tgbotapi.NewEditMessageText(int64(user), messageID, fmt.Sprintf("%s👇🏻", childRoute))
+				mkp := GenFor(childRoute)
+				msg.ReplyMarkup = &mkp
+				// msg := tgbotapi.NewEditMessageReplyMarkup(int64(user), messageID, GenFor(childRoute))
+				if _, err := bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
+					log.Panic(err)
+				}
 				if _, err := bot.Send(msg); err != nil {
 					log.Panic(err)
 				}
+				currentRoutes[user] = childRoute
 			}
-			currentRoutes[user] = childRoute
 		}
 	case strings.Contains(data, "back"):
 		fmt.Println(data)
-		user := user(chatID)
+		user := user.User(chatID)
 		if route, ok := currentRoutes[user]; ok {
-			parent := route.parent
-			msg := tgbotapi.NewMessage(int64(user), parent.name+" выбери свое расписание👇🏻") // ⬇️ 🎓 👇🏻
-			msg.ReplyMarkup = GenFor(parent)
+			parent := route.Parent
+			msg := tgbotapi.NewEditMessageText(int64(user), messageID, fmt.Sprintf("%s👇🏻", parent))
+			mkp := GenFor(parent)
+			msg.ReplyMarkup = &mkp
+			if _, err := bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
+				log.Panic(err)
+			}
 			if _, err := bot.Send(msg); err != nil {
 				log.Panic(err)
 			}
