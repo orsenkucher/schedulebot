@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/orsenkucher/schedulebot/creds"
+
 	"github.com/orsenkucher/schedulebot/bot"
 	"github.com/orsenkucher/schedulebot/cloudfunc"
-	"github.com/orsenkucher/schedulebot/creds"
 	"github.com/orsenkucher/schedulebot/fbclient"
 )
 
@@ -22,7 +23,7 @@ import (
 //
 
 func main() {
-	fbclient.CreateSchFromJSON()
+	// fbclient.CreateSchFromJSON()
 
 	// /*
 	fbclient.GenerateTestSchedule()
@@ -30,8 +31,8 @@ func main() {
 	table := fbclient.FetchTable()
 	users := fbclient.FetchSubscribers()
 
-	key := creds.ReadCr()
-	b := bot.InitBot(key)
+	cr := creds.Cr459.String()
+	b := bot.InitBot(cr)
 
 	chans := map[string]chan bot.SubEvent{}
 
