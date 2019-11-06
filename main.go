@@ -30,6 +30,8 @@ func main() {
 	table := fbclient.FetchTable()
 	users := fbclient.FetchSubscribers()
 
+	fmt.Println(table[2])
+
 	key := creds.ReadCr()
 	b := bot.InitBot(key)
 

@@ -79,6 +79,7 @@ func GenerateTestSchedule() {
 		Name:   "test",
 		Event:  []string{"We started", "Still alive", "Unbelivable", "5 минут, полёт нормальный", "I`ll send you one more in one min if everything is good"},
 		Minute: []int{mins + 6, mins + 7, mins + 8, mins + 9, mins + 10},
+		Type:   []int{-1, -1, -1, -1, -1},
 	}
 	SendSchedule(&schedule)
 	// AddSubscriber(259224772, "test")

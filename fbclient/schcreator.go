@@ -18,6 +18,7 @@ type Event struct {
 	Title string `json:"title"`
 	Day   string `json:"day"`
 	Time  string `json:"time"`
+	Spin  string `json:"spin"`
 }
 
 // Schedule represents my custom schedule scheme
@@ -35,8 +36,20 @@ func CreateSchFromJSON() {
 
 	var schs []Schedule
 	json.Unmarshal(bytes, &schs)
-	// fmt.Println(schs)
+	for _, s := range schs {
+		for _, e := range s.Events {
+			fmt.Println(e)
+		}
+	}
+	fmt.Scanln()
 	fireSchs := makeFirestoreSchedules(schs)
+	json.Unmarshal(bytes, &schs)
+	for _, s := range fireSchs {
+		for i, e := range s.Type {
+			fmt.Println(e, s.Event[i])
+		}
+	}
+	fmt.Scanln()
 
 	count := len(fireSchs)
 	var wg sync.WaitGroup
@@ -60,6 +73,7 @@ func makeFirestoreSchedules(schs []Schedule) []cloudfunc.Schedule {
 	for _, sch := range schs {
 		schedule := cloudfunc.Schedule{
 			Name:   sch.Name,
+			Type:   make([]int, 0, len(sch.Events)),
 			Event:  make([]string, 0, len(sch.Events)),
 			Minute: make([]int, 0, len(sch.Events))}
 		for _, e := range sch.Events {
@@ -80,7 +94,14 @@ func makeFirestoreSchedules(schs []Schedule) []cloudfunc.Schedule {
 			if err != nil {
 				panic("Invalid Minute on " + e.Title)
 			}
-
+			spin := -1
+			if e.Spin == "up" {
+				spin = 0
+			}
+			if e.Spin == "down" {
+				spin = 1
+			}
+			schedule.Type = append(schedule.Type, spin)
 			schedule.Event = append(schedule.Event, e.Title)
 			schedule.Minute = append(schedule.Minute, (dayIdx*24*60+(hour-2)*60+minute+MPW)%MPW)
 		}
