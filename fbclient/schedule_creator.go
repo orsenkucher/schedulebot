@@ -82,6 +82,6 @@ func GenerateTestSchedule() {
 		Type:   []int{-1, -1, -1, -1, -1},
 	}
 	SendSchedule(&schedule)
-	// AddSubscriber(259224772, "test")
-	// AddSubscriber(364448153, "test")
+	AddSubscriber(259224772, "test")
+	AddSubscriber(364448153, "test")
 }

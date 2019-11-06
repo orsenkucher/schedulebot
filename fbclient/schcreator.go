@@ -41,7 +41,7 @@ func CreateSchFromJSON() {
 			fmt.Println(e)
 		}
 	}
-	fmt.Scanln()
+	// fmt.Scanln()
 	fireSchs := makeFirestoreSchedules(schs)
 	json.Unmarshal(bytes, &schs)
 	for _, s := range fireSchs {
@@ -49,7 +49,7 @@ func CreateSchFromJSON() {
 			fmt.Println(e, s.Event[i])
 		}
 	}
-	fmt.Scanln()
+	// fmt.Scanln()
 
 	count := len(fireSchs)
 	var wg sync.WaitGroup
