@@ -4,60 +4,64 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"strings"
 	"time"
+
+	"github.com/orsenkucher/schedulebot/creds"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/orsenkucher/schedulebot/cloudfunc"
-	"github.com/orsenkucher/schedulebot/fbclient"
 )
 
-// InitBot initializes telegram bot
-func InitBot(withKey string) *tgbotapi.BotAPI {
-	bot, err := tgbotapi.NewBotAPI(withKey)
+// Bot is a scheduler bot
+type Bot struct {
+	credential creds.Credential
+	api        *tgbotapi.BotAPI
+}
+
+// NewBot creates new scheduler bot with provided credentials
+func NewBot(cr creds.Credential) *Bot {
+	b := &Bot{credential: cr}
+	b.initAPI()
+	return b
+}
+
+func (b *Bot) initAPI() {
+	var err error
+	b.api, err = tgbotapi.NewBotAPI(b.credential.String())
 	if err != nil {
 		log.Panic(err)
 	}
 
-	bot.Debug = false
+	b.api.Debug = false
+	log.Printf("Authorized on account %s", b.api.Self.UserName)
 
-	log.Printf("Authorized on account %s", bot.Self.UserName)
-	_, err = bot.RemoveWebhook()
+	_, err = b.api.RemoveWebhook()
 	if err != nil {
 		log.Println("Cant remove webhook")
 	}
-
-	return bot
 }
 
 // Listen starts infinite listening
-func Listen(bot *tgbotapi.BotAPI, chans map[string]chan SubEvent) {
+func (b *Bot) Listen(chans map[string]chan SubEvent) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates, err := bot.GetUpdatesChan(u)
+	updates, err := b.api.GetUpdatesChan(u)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	// port := os.Getenv("PORT")
-	// if port == "" {
-	// 	port = "8080"
-	// }
-	// go log.Fatal(http.ListenAndServe(":"+port, nil))
-	// log.Println("Launched port goroutine")
-
 	for update := range updates {
 		if update.CallbackQuery != nil {
-			handleCallback(bot, update, chans)
+			handleCallback(b.api, update, chans)
 			continue
 		}
 
 		if update.Message != nil {
 			if update.Message.IsCommand() {
-				handleCommand(bot, update)
+				handleCommand(b.api, update)
 			} else if update.Message.Text != "" {
-				handleMessage(bot, update)
+				handleMessage(b.api, update)
 			}
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 			continue
@@ -65,137 +69,21 @@ func Listen(bot *tgbotapi.BotAPI, chans map[string]chan SubEvent) {
 	}
 }
 
-func handleMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-	// // Do nothing
-	// msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-	// if _, err := bot.Send(msg); err != nil {
-	// 	log.Panic(err)
-	// }
-}
-
-var inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData(" 📆 1 група  ", "sub:group1"), // 👽 🔴
-		tgbotapi.NewInlineKeyboardButtonData(" 📆 2 група  ", "sub:group2"), //👥  🔵 👾 ⏱️
-	),
-	// tgbotapi.NewInlineKeyboardRow(
-	// 	tgbotapi.NewInlineKeyboardButtonData(" 🤹 demo  ", "sub:test"),
-	// ),
-)
-
-var inlineResetKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData(" ♻️ 1 група  ", "reset:group1"),
-		tgbotapi.NewInlineKeyboardButtonData(" ♻️ 2 група  ", "reset:group2"),
-	),
-	// tgbotapi.NewInlineKeyboardRow(
-	// 	tgbotapi.NewInlineKeyboardButtonData(" ♻️ demo  ", "reset:test"),
-	// ),
-)
-
-var cmdMapping = map[string]string{
-	"sub:group1":   "1 група",
-	"sub:group2":   "2 група",
-	"reset:group1": "1 група",
-	"reset:group2": "2 група"}
-
-func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-	switch update.Message.Command() {
-	case "sub", "start", "go":
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбери свое расписание👇🏻") // ⬇️ 🎓 👇🏻
-		msg.ReplyMarkup = inlineKeyboard
-		if _, err := bot.Send(msg); err != nil {
-			log.Panic(err)
-		}
-	case "reset", "unsub":
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID,
-			"Варианты отписки ("+update.Message.Chat.FirstName+")") // Unsub options ("+update.Message.Chat.FirstName+")"
-		msg.ReplyMarkup = inlineResetKeyboard
-		fmt.Println("Doing reset for user", update.Message.Chat.ID)
-		if _, err := bot.Send(msg); err != nil {
-			log.Panic(err)
-		}
-	default:
-		return
-	}
-}
-
-// SubEvent represents subscription event
-type SubEvent struct {
-	ChatID int64
-	Action SubAction
-}
-
-// SubAction represents user action
-type SubAction int
-
-// Add is when user Success
-// Del is when user unsubbed
-const (
-	_ SubAction = iota
-	Add
-	Del
-)
-
-func handleCallback(
-	bot *tgbotapi.BotAPI,
-	update tgbotapi.Update,
-	chans map[string]chan SubEvent) {
-	data := update.CallbackQuery.Data
-	chatID := update.CallbackQuery.Message.Chat.ID
-	scheduleName := strings.Split(data, ":")[1]
-	ch, ok := chans[scheduleName]
-	if ok {
-		switch {
-		case strings.Contains(data, "sub"):
-			fmt.Println(data)
-			go sendOnChan(ch, SubEvent{Action: Add, ChatID: chatID})
-			fbclient.AddSubscriber(chatID, scheduleName)
-			// snackMsg := "Our congrats 🥂. We handled your sub!"
-			// Поздравляю! Ты подписался на бота! До скорых встреч на паре!
-			snackMsg := "Поздравляю! Ты подписался на \"" + cmdMapping[data] + "\". Увидимся на паре 🥂"
-			// snackMsg := "Ваша регистрация обработана 🥂 (" + cmdMapping[data] + ")"
-			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
-			msg := tgbotapi.NewMessage(chatID, snackMsg)
-			if _, err := bot.Send(msg); err != nil {
-				log.Println(err)
-			}
-		case strings.Contains(data, "reset"):
-			fmt.Println(data)
-			go sendOnChan(ch, SubEvent{Action: Del, ChatID: chatID})
-			fbclient.DeleteSubscriber(chatID, scheduleName)
-			// snackMsg := "Un️subscribed ♻️" // ☠️
-			snackMsg := "Отписка проведена ♻️ (" + cmdMapping[data] + ")"
-			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
-			msg := tgbotapi.NewMessage(chatID, snackMsg)
-			if _, err := bot.Send(msg); err != nil {
-				log.Println(err)
-			}
-		}
-	}
-}
-
-func sendOnChan(ch chan SubEvent, e SubEvent) {
-	ch <- e
-}
-
 // SpreadMessage is public
-func SpreadMessage(b *tgbotapi.BotAPI, users []int64, msg string) {
+func (b *Bot) SpreadMessage(users []int64, msg string) {
 	log.Printf("Sending message to %v users\n", len(users))
 	for _, u := range users {
 		time.Sleep(100 * time.Millisecond)
 		tgmsg := tgbotapi.NewMessage(u, msg)
 		log.Printf("Sending to %v\n", u)
-		if _, err := b.Send(tgmsg); err != nil {
+		if _, err := b.api.Send(tgmsg); err != nil {
 			log.Println(err)
-			// return err
 		}
 	}
-	// return nil
 }
 
 // ActivateSchedule is public
-func ActivateSchedule(sch cloudfunc.Schedule, usersstr []cloudfunc.Subscriber, b *tgbotapi.BotAPI, ch chan SubEvent) {
+func (b *Bot) ActivateSchedule(sch cloudfunc.Schedule, usersstr []cloudfunc.Subscriber, ch chan SubEvent) {
 	users := []int64{}
 	for i := 0; i < len(usersstr); i++ {
 		n, _ := strconv.ParseInt(usersstr[i].ID, 10, 64)
@@ -238,7 +126,7 @@ func ActivateSchedule(sch cloudfunc.Schedule, usersstr []cloudfunc.Subscriber, b
 		}
 
 		fmt.Println(users)
-		SpreadMessage(b, users, sch.Event[ind])
+		b.SpreadMessage(users, sch.Event[ind])
 		fmt.Println("Success")
 	}
 }
