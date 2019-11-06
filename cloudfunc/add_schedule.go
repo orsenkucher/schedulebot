@@ -17,6 +17,7 @@ type Schedule struct {
 	Hash64 string   `firebase:"hash64" json:"hash64"`
 	Event  []string `firebase:"event" json:"event"`
 	Minute []int    `firebase:"minute" json:"minute"`
+	Type   []int    `firebase:"type" json:"type"`
 }
 
 // AddSchedule appends Schedule to firebase collection

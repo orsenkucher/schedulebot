@@ -41,6 +41,8 @@ func main() {
 	table := fbclient.FetchTable()
 	users := fbclient.FetchSubscribers()
 
+	fmt.Println(table[2])
+
 	b := bot.NewBot(creds.Cr459)
 
 	chans := map[string]chan bot.SubEvent{}
