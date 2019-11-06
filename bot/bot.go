@@ -250,13 +250,16 @@ func calcNextSchedule(s cloudfunc.Schedule) (time.Duration, int) {
 	now := time.Now().UTC()
 	mins := cloudfunc.GetMinsOfWeek(now)
 	nextEvent := 0
-	minMins := MPW
+	minMins := 2*MPW + 1
 	_, thisWeek := time.Now().UTC().ISOWeek()
 	thisWeek %= 2
 
 	for i := 0; i < len(s.Event); i++ {
 		curmins := (s.Minute[i] - 5 - mins + MPW) % MPW
-		if (s.Type[i] == thisWeek || s.Type[i] == -1) && minMins > curmins && curmins != 0 {
+		if s.Type[i] == (thisWeek+1)%2 {
+			curmins += MPW
+		}
+		if minMins > curmins && curmins != 0 {
 			nextEvent = i
 			minMins = curmins
 		}

@@ -51,8 +51,8 @@ github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+o
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
-github.com/orsenkucher/schedulebot/cloudfunc v0.0.0-20191018152414-b2af4f84e455 h1:Y0bGzH7BkV+j6bIummLG7fRd1H+tDj+vJ9MtEQeAxI8=
-github.com/orsenkucher/schedulebot/cloudfunc v0.0.0-20191018152414-b2af4f84e455/go.mod h1:07MY6aPiBAW3eI2lKOJfrlzZhzWjKVG7PeR9+L8c9LQ=
+github.com/orsenkucher/schedulebot/cloudfunc v0.0.0-20191106153019-6c55ab91da77 h1:axZNDa6DLIox4xCvqd7vpqLdqIqkGof1c2KpCtuIREE=
+github.com/orsenkucher/schedulebot/cloudfunc v0.0.0-20191106153019-6c55ab91da77/go.mod h1:07MY6aPiBAW3eI2lKOJfrlzZhzWjKVG7PeR9+L8c9LQ=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/technoweenie/multipartstreamer v1.0.1 h1:XRztA5MXiR1TIRHxH2uNxXxaIkKQDeX7m2XsSOlQEnM=
 github.com/technoweenie/multipartstreamer v1.0.1/go.mod h1:jNVxdtShOxzAsukZwTSw6MDx5eUJoiEBsSvzDU9uzog=
