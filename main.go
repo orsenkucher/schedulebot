@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/orsenkucher/schedulebot/creds"
+	"github.com/orsenkucher/schedulebot/sch"
+	"github.com/orsenkucher/schedulebot/subs"
 
 	"github.com/orsenkucher/schedulebot/bot"
 	"github.com/orsenkucher/schedulebot/cloudfunc"
@@ -39,18 +41,14 @@ func main() {
 	// fbclient.GenerateTestSchedule()
 	fmt.Println("Minutes from week start", cloudfunc.GetMinsOfWeek(time.Now()))
 	table := fbclient.FetchTable()
-	users := fbclient.FetchSubscribers()
-
-	fmt.Println(table[2])
+	subscribers := fbclient.FetchSubscribers()
 
 	b := bot.NewBot(creds.Cr459)
 
-	chans := map[string]chan bot.SubEvent{}
+	chans := map[string]chan subs.SubEvent{}
 
-	for _, sch := range table {
-		chans[sch.Name] = make(chan bot.SubEvent)
-		go b.ActivateSchedule(sch, users[sch.Name], chans[sch.Name])
-	}
+	s := sch.NewScheduler(b, chans)
+	s.ActivateSchedules(table, subscribers)
 	b.Listen(chans)
 	//*/
 	//fbclient.CreateSchedule()

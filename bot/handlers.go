@@ -8,29 +8,13 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/orsenkucher/schedulebot/fbclient"
 	"github.com/orsenkucher/schedulebot/route"
+	"github.com/orsenkucher/schedulebot/subs"
 	"github.com/orsenkucher/schedulebot/user"
 )
 
 var currentRoutes = make(map[user.User]*route.Tree)
 
-// SubEvent represents subscription event
-type SubEvent struct {
-	ChatID int64
-	Action SubAction
-}
-
-// SubAction represents user action
-type SubAction int
-
-// Add is when user Success
-// Del is when user unsubbed
-const (
-	_ SubAction = iota
-	Add
-	Del
-)
-
-func sendOnChan(ch chan SubEvent, e SubEvent) {
+func sendOnChan(ch chan subs.SubEvent, e subs.SubEvent) {
 	ch <- e
 }
 
@@ -68,7 +52,7 @@ func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 func handleCallback(
 	bot *tgbotapi.BotAPI,
 	update tgbotapi.Update,
-	chans map[string]chan SubEvent) {
+	chans map[string]chan subs.SubEvent) {
 	data := update.CallbackQuery.Data
 	chatID := update.CallbackQuery.Message.Chat.ID
 	messageID := update.CallbackQuery.Message.MessageID
@@ -113,7 +97,7 @@ func handleCallback(
 		ch, ok := chans[scheduleName]
 		if ok {
 			fmt.Println(data)
-			go sendOnChan(ch, SubEvent{Action: Add, ChatID: chatID})
+			go sendOnChan(ch, subs.SubEvent{Action: subs.Add, ChatID: chatID})
 			fbclient.AddSubscriber(chatID, scheduleName)
 			// snackMsg := "Our congrats 🥂. We handled your sub!"
 			// Поздравляю! Ты подписался на бота! До скорых встреч на паре!
@@ -131,7 +115,7 @@ func handleCallback(
 		ch, ok := chans[scheduleName]
 		if ok {
 			fmt.Println(data)
-			go sendOnChan(ch, SubEvent{Action: Del, ChatID: chatID})
+			go sendOnChan(ch, subs.SubEvent{Action: subs.Del, ChatID: chatID})
 			fbclient.DeleteSubscriber(chatID, scheduleName)
 			// snackMsg := "Un️subscribed ♻️" // ☠️
 			snackMsg := "Отписка проведена ♻️ (" + cmdMapping[data] + ")"
