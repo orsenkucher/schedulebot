@@ -10,8 +10,8 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
-// SubscriberQuerie is public
-type SubscriberQuerie struct {
+// SubscriberQuery is public
+type SubscriberQuery struct {
 	ID           string `firebase:"ID" json:"ID"`
 	ScheduleName string `firebase:"schedulename" json:"schedulename"`
 }
@@ -41,7 +41,7 @@ func AddSubscriber(w http.ResponseWriter, r *http.Request) {
 	}
 
 	str, _ := ioutil.ReadAll(r.Body)
-	var subscriberq SubscriberQuerie
+	var subscriberq SubscriberQuery
 	json.Unmarshal(str, &subscriberq)
 
 	subscribersRef := client.Collection("Schedules").Doc(subscriberq.ScheduleName).Collection("Subscribers").Doc(subscriberq.ID)
@@ -57,7 +57,7 @@ func DeleteSubscriber(w http.ResponseWriter, r *http.Request) {
 	}
 
 	str, _ := ioutil.ReadAll(r.Body)
-	var subscriberq SubscriberQuerie
+	var subscriberq SubscriberQuery
 	json.Unmarshal(str, &subscriberq)
 
 	client.Collection("Schedules").Doc(subscriberq.ScheduleName).Collection("Subscribers").Doc(subscriberq.ID).Delete(ctx)

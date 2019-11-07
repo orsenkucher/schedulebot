@@ -1,16 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"time"
-
 	"github.com/orsenkucher/schedulebot/creds"
 	"github.com/orsenkucher/schedulebot/sch"
 	"github.com/orsenkucher/schedulebot/subs"
 
 	"github.com/orsenkucher/schedulebot/bot"
-	"github.com/orsenkucher/schedulebot/cloudfunc"
-	"github.com/orsenkucher/schedulebot/fbclient"
 )
 
 // *** ASAP ***
@@ -35,21 +30,19 @@ import (
 // У бота есть канал из сообщений для отправки, но его читает 30 раз в сек (возможно)
 //
 func main() {
+	// fbclient.GenerateTestSchedule()
 	// fbclient.CreateSchFromJSON()
 
 	// /*
-	// fbclient.GenerateTestSchedule()
-	fmt.Println("Minutes from week start", cloudfunc.GetMinsOfWeek(time.Now()))
-	table := fbclient.FetchTable()
-	subscribers := fbclient.FetchSubscribers()
+	subStream := map[string]chan subs.SubEvent{}
+	// schedStream := map[string]chan subs.SubEvent{}
 
 	b := bot.NewBot(creds.Cr459)
 
-	chans := map[string]chan subs.SubEvent{}
+	sch.NewScheduler(b, subStream)
 
-	s := sch.NewScheduler(b, chans)
-	s.ActivateSchedules(table, subscribers)
-	b.Listen(chans)
+	b.Listen(subStream)
 	//*/
+
 	//fbclient.CreateSchedule()
 }
