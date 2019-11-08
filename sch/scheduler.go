@@ -16,10 +16,10 @@ const MPW = 7 * 60 * 24
 
 // Scheduler schedules send message jobs
 type Scheduler struct {
-	bot   *bot.Bot // replace with chan!
-	onsub chan subs.SubEvent
-	subs  map[int64]void
-	sch   cloudfunc.Schedule
+	bot  *bot.Bot // replace with chan!
+	upds chan subs.SubEvent
+	subs map[int64]void
+	sch  cloudfunc.Schedule
 }
 
 type void struct{}
@@ -51,10 +51,10 @@ func parseSubscribers(subs []cloudfunc.Subscriber) map[int64]void {
 func newScheduler(bot *bot.Bot, sch cloudfunc.Schedule, ss map[int64]void) chan subs.SubEvent {
 	ch := make(chan subs.SubEvent)
 	s := Scheduler{
-		onsub: ch,
-		bot:   bot,
-		sch:   sch,
-		subs:  ss}
+		upds: ch,
+		bot:  bot,
+		sch:  sch,
+		subs: ss}
 	go s.activateSchedule()
 	go s.listenSubEvents()
 	return ch
@@ -63,7 +63,7 @@ func newScheduler(bot *bot.Bot, sch cloudfunc.Schedule, ss map[int64]void) chan 
 func (s *Scheduler) listenSubEvents() {
 	for {
 		select {
-		case e := <-s.onsub:
+		case e := <-s.upds:
 			switch e.Action {
 			case subs.Add:
 				fmt.Println("adding user ", e.ChatID)

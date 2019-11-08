@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/orsenkucher/schedulebot/creds"
+	"github.com/orsenkucher/schedulebot/fbclient"
 	"github.com/orsenkucher/schedulebot/sch"
 
 	"github.com/orsenkucher/schedulebot/bot"
@@ -29,7 +30,7 @@ import (
 // У бота есть канал из сообщений для отправки, но его читает 30 раз в сек (возможно)
 //
 func main() {
-	// fbclient.GenerateTestSchedule()
+	fbclient.GenerateTestSchedule()
 	// fbclient.CreateSchFromJSON()
 
 	// /*
