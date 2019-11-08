@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/orsenkucher/schedulebot/creds"
 	"github.com/orsenkucher/schedulebot/sch"
-	"github.com/orsenkucher/schedulebot/subs"
 
 	"github.com/orsenkucher/schedulebot/bot"
 )
@@ -34,14 +33,13 @@ func main() {
 	// fbclient.CreateSchFromJSON()
 
 	// /*
-	subStream := map[string]chan subs.SubEvent{}
+
 	// schedStream := map[string]chan subs.SubEvent{}
 
 	b := bot.NewBot(creds.Cr459)
-
-	sch.NewScheduler(b, subStream)
-
+	subStream := sch.SpawnSchedulers(b)
 	b.Listen(subStream)
+
 	//*/
 
 	//fbclient.CreateSchedule()

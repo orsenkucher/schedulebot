@@ -13,49 +13,43 @@ import (
 
 // Scheduler schedules send message jobs
 type Scheduler struct {
-	bot         *bot.Bot // replace with chan!
-	SubStream   map[string]chan subs.SubEvent
-	table       fbclient.Table
-	subscribers map[string][]cloudfunc.Subscriber
+	bot     *bot.Bot // replace with chan!
+	onSubCh chan subs.SubEvent
+	subs    []cloudfunc.Subscriber
+	sch     cloudfunc.Schedule
 }
 
-// NewScheduler is used to activate Scheduler
-func NewScheduler(bot *bot.Bot, subChan map[string]chan subs.SubEvent) *Scheduler {
+// SpawnSchedulers spawns and activates all schedulers
+func SpawnSchedulers(bot *bot.Bot) map[string]chan subs.SubEvent {
 	table := fbclient.FetchTable()
 	subscribers := fbclient.FetchSubscribers()
-	s := Scheduler{
-		bot:         bot,
-		SubStream:   subChan,
-		table:       table,
-		subscribers: subscribers}
-
-	s.activateSchedules()
-	return &s
-}
-
-func (s *Scheduler) activateSchedules() {
-	for _, sch := range s.table {
-		s.SubStream[sch.Name] = make(chan subs.SubEvent)
-		go s.activateSchedule(sch, s.SubStream[sch.Name])
+	chMap := make(map[string]chan subs.SubEvent)
+	for _, sch := range table {
+		ch := make(chan subs.SubEvent)
+		chMap[sch.Name] = ch
+		s := Scheduler{
+			bot:     bot,
+			onSubCh: ch,
+			sch:     sch,
+			subs:    subscribers[sch.Name]}
+		go s.activateSchedule()
 	}
+	return chMap
 }
-
-// listen subChan here and mutate scheduler users field
-// maybe we need scheduler per schedule (not one, but multiple ones)
 
 // func (s *Scheduler) listenSubEvents(ch chan subs.SubEvent) {
 
 // }
 
-func (s *Scheduler) activateSchedule(sch cloudfunc.Schedule, ch chan subs.SubEvent) {
+func (s *Scheduler) activateSchedule() {
 	users := []int64{}
-	sub := s.subscribers[sch.Name]
+	sub := s.subs
 	for i := 0; i < len(sub); i++ {
 		n, _ := strconv.ParseInt(sub[i].ID, 10, 64)
 		users = append(users, n)
 	}
 	for {
-		del, ind := calcNextSchedule(sch)
+		del, ind := calcNextSchedule(s.sch)
 		fmt.Println(users)
 		fmt.Println("sleep for:", del.Minutes())
 		time.Sleep(del)
@@ -68,7 +62,7 @@ func (s *Scheduler) activateSchedule(sch cloudfunc.Schedule, ch chan subs.SubEve
 	Loop:
 		for {
 			select {
-			case e := <-ch:
+			case e := <-s.onSubCh:
 				switch e.Action {
 				case subs.Add:
 					fmt.Println("adding user ", e.ChatID)
@@ -91,7 +85,7 @@ func (s *Scheduler) activateSchedule(sch cloudfunc.Schedule, ch chan subs.SubEve
 		}
 
 		fmt.Println(users)
-		s.bot.SpreadMessage(users, sch.Event[ind])
+		s.bot.SpreadMessage(users, s.sch.Event[ind])
 		fmt.Println("Success")
 	}
 }
