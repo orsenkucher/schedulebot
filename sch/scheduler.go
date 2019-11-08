@@ -11,13 +11,20 @@ import (
 	"github.com/orsenkucher/schedulebot/subs"
 )
 
+// MPW is total minutes in week
+const MPW = 7 * 60 * 24
+
 // Scheduler schedules send message jobs
 type Scheduler struct {
-	bot     *bot.Bot // replace with chan!
-	onSubCh chan subs.SubEvent
-	subs    []cloudfunc.Subscriber
-	sch     cloudfunc.Schedule
+	bot   *bot.Bot // replace with chan!
+	onsub chan subs.SubEvent
+	subs  map[int64]void
+	sch   cloudfunc.Schedule
 }
+
+type void struct{}
+
+var voi void
 
 // SpawnSchedulers spawns and activates all schedulers
 func SpawnSchedulers(bot *bot.Bot) map[string]chan subs.SubEvent {
@@ -25,73 +32,71 @@ func SpawnSchedulers(bot *bot.Bot) map[string]chan subs.SubEvent {
 	subscribers := fbclient.FetchSubscribers()
 	chMap := make(map[string]chan subs.SubEvent)
 	for _, sch := range table {
-		ch := make(chan subs.SubEvent)
+		ss := parseSubscribers(subscribers[sch.Name])
+		ch := newScheduler(bot, sch, ss)
 		chMap[sch.Name] = ch
-		s := Scheduler{
-			bot:     bot,
-			onSubCh: ch,
-			sch:     sch,
-			subs:    subscribers[sch.Name]}
-		go s.activateSchedule()
 	}
 	return chMap
 }
 
-// func (s *Scheduler) listenSubEvents(ch chan subs.SubEvent) {
-
-// }
-
-func (s *Scheduler) activateSchedule() {
-	users := []int64{}
-	sub := s.subs
-	for i := 0; i < len(sub); i++ {
-		n, _ := strconv.ParseInt(sub[i].ID, 10, 64)
-		users = append(users, n)
+func parseSubscribers(subs []cloudfunc.Subscriber) map[int64]void {
+	ids := make(map[int64]void)
+	for i := 0; i < len(subs); i++ {
+		id, _ := strconv.ParseInt(subs[i].ID, 10, 64)
+		ids[id] = voi
 	}
+	return ids
+}
+
+func newScheduler(bot *bot.Bot, sch cloudfunc.Schedule, ss map[int64]void) chan subs.SubEvent {
+	ch := make(chan subs.SubEvent)
+	s := Scheduler{
+		onsub: ch,
+		bot:   bot,
+		sch:   sch,
+		subs:  ss}
+	go s.activateSchedule()
+	go s.listenSubEvents()
+	return ch
+}
+
+func (s *Scheduler) listenSubEvents() {
 	for {
-		del, ind := calcNextSchedule(s.sch)
-		fmt.Println(users)
-		fmt.Println("sleep for:", del.Minutes())
-		time.Sleep(del)
-		newInf := map[int64]bool{}
-
-		for i := 0; i < len(users); i++ {
-			newInf[users[i]] = true
-		}
-
-	Loop:
-		for {
-			select {
-			case e := <-s.onSubCh:
-				switch e.Action {
-				case subs.Add:
-					fmt.Println("adding user ", e.ChatID)
-					newInf[e.ChatID] = true
-				case subs.Del:
-					fmt.Println("deleting user ", e.ChatID)
-					newInf[e.ChatID] = false
-				}
-			default:
-				break Loop
+		select {
+		case e := <-s.onsub:
+			switch e.Action {
+			case subs.Add:
+				fmt.Println("adding user ", e.ChatID)
+				s.subs[e.ChatID] = voi
+			case subs.Del:
+				fmt.Println("deleting user ", e.ChatID)
+				delete(s.subs, e.ChatID)
 			}
 		}
-
-		users = make([]int64, 0, len(newInf))
-
-		for k, v := range newInf {
-			if v {
-				users = append(users, k)
-			}
-		}
-
-		fmt.Println(users)
-		s.bot.SpreadMessage(users, s.sch.Event[ind])
-		fmt.Println("Success")
 	}
 }
 
-// MPW is total minutes in week
-const MPW = 7 * 60 * 24
+func (s *Scheduler) getSubIDs() []int64 {
+	ids := make([]int64, 0, len(s.subs))
+	for k := range s.subs {
+		ids = append(ids, k)
+	}
+	return ids
+}
+
+func (s *Scheduler) activateSchedule() {
+	for {
+		del, ind := calcNextSchedule(s.sch)
+		fmt.Println(s.getSubIDs())
+		fmt.Println("sleep for:", del.Minutes())
+		time.Sleep(del)
+
+		ids := s.getSubIDs()
+		fmt.Println(ids)
+		s.bot.SpreadMessage(ids, s.sch.Event[ind])
+		fmt.Println("Success")
+	}
+}
 
 func calcNextSchedule(s cloudfunc.Schedule) (time.Duration, int) {
 	now := time.Now().UTC()
