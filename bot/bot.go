@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/orsenkucher/schedulebot/creds"
-	"github.com/orsenkucher/schedulebot/subs"
+	"github.com/orsenkucher/schedulebot/root"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -40,7 +40,7 @@ func (b *Bot) initAPI() {
 }
 
 // Listen starts infinite listening
-func (b *Bot) Listen(chans map[string]chan subs.SubEvent) {
+func (b *Bot) Listen(chans map[string]chan root.SubEvent) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 

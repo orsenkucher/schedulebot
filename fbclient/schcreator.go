@@ -9,8 +9,10 @@ import (
 	"sync"
 
 	"github.com/orsenkucher/schedulebot/cloudfunc"
+	"github.com/orsenkucher/schedulebot/root"
 )
 
+const mpw = root.MPW
 const schFile = "fbclient/sch.json"
 
 // Event represents an event
@@ -103,15 +105,12 @@ func makeFirestoreSchedules(schs []Schedule) []cloudfunc.Schedule {
 			}
 			schedule.Type = append(schedule.Type, spin)
 			schedule.Event = append(schedule.Event, e.Title)
-			schedule.Minute = append(schedule.Minute, (dayIdx*24*60+(hour-2)*60+minute+MPW)%MPW)
+			schedule.Minute = append(schedule.Minute, (dayIdx*24*60+(hour-2)*60+minute+mpw)%mpw)
 		}
 		fireSchs = append(fireSchs, schedule)
 	}
 	return fireSchs
 }
-
-// MPW is total minutes in week
-const MPW = 7 * 60 * 24
 
 func readJSON(path string) ([]byte, error) {
 	j, err := ioutil.ReadFile(schFile)
