@@ -4,6 +4,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/orsenkucher/schedulebot/sch"
+
 	"github.com/orsenkucher/schedulebot/creds"
 	"github.com/orsenkucher/schedulebot/root"
 
@@ -14,12 +16,14 @@ import (
 type Bot struct {
 	credential creds.Credential
 	api        *tgbotapi.BotAPI
+	Jobs       chan sch.Job
 }
 
 // NewBot creates new scheduler bot with provided credentials
 func NewBot(cr creds.Credential) *Bot {
-	b := &Bot{credential: cr}
+	b := &Bot{credential: cr, Jobs: make(chan sch.Job)}
 	b.initAPI()
+	go b.processJobs()
 	return b
 }
 
@@ -36,6 +40,15 @@ func (b *Bot) initAPI() {
 	_, err = b.api.RemoveWebhook()
 	if err != nil {
 		log.Println("Cant remove webhook")
+	}
+}
+
+func (b *Bot) processJobs() {
+	for {
+		select {
+		case j := <-b.Jobs:
+			b.SpreadMessage(j.Subs, j.Event)
+		}
 	}
 }
 

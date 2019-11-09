@@ -9,6 +9,9 @@ type Schedule struct {
 	Spin    []int
 }
 
+// Subscriber is subscribed to at least one Schedule
+type Subscriber int64
+
 // SubEvent represents subscription event
 type SubEvent struct {
 	SubID  int64

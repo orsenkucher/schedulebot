@@ -36,9 +36,8 @@ func main() {
 	// /*
 
 	// schedStream := map[string]chan subs.SubEvent{}
-
 	b := bot.NewBot(creds.Cr459)
-	subStream := sch.SpawnSchedulers(b)
+	subStream := sch.SpawnSchedulers(b.Jobs)
 	b.Listen(subStream)
 
 	//*/
