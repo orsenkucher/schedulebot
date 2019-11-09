@@ -1,7 +1,9 @@
 package route
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 )
 
 // Tree is a node (and a tree) of a tree data structure.
@@ -16,7 +18,25 @@ func (t *Tree) String() string {
 	if t.Parent == nil {
 		return t.Name
 	}
-	return t.Parent.String() + "." + t.Name
+	return t.Parent.String() + " ⫶ " + t.Name
+}
+
+// MakePath is used to create valid path to current node
+func (t *Tree) MakePath() string {
+	chain := t.chain()
+	bytes, err := json.Marshal(chain)
+	if err != nil {
+		panic(err)
+	}
+	return string(bytes)
+}
+
+func (t *Tree) chain() []string {
+	chain := []string{t.Name}
+	if t.Parent == nil {
+		return chain
+	}
+	return append(t.Parent.chain(), chain...)
 }
 
 func (t *Tree) makeChild(name string) *Tree {
@@ -39,15 +59,24 @@ func (t *Tree) Select(childName string) (*Tree, bool) {
 	return nil, false
 }
 
-// // Parent returns parent of this node and success flag
-// func (t *Tree) Parent() (*Tree, bool) {
-// 	if t.parent != nil {
-// 		return t.parent, true
-// 	}
-// 	return nil, false
-// }
-
-// func (t *Tree) Child
+// Find searches for route node by path
+// Fist selector of the path have to be the name of current node
+func (t *Tree) Find(path string) (*Tree, bool) {
+	var chain []string
+	err := json.Unmarshal([]byte(path), &chain)
+	if err != nil {
+		log.Println("route Tree.Find invalid path")
+		return nil, false
+	}
+	for _, name := range chain[1:] {
+		var ok bool
+		t, ok = t.Select(name)
+		if !ok {
+			return nil, false
+		}
+	}
+	return t, true
+}
 
 // Routes are possible routes
 var Routes = makeRoutes()
@@ -62,5 +91,10 @@ func makeRoutes() *Tree {
 	fmt.Println(t012)
 	t0111 := t011.makeChild("1 група")
 	fmt.Println(t0111)
+	t0111path := t0111.MakePath()
+	fmt.Println(t0111path)
+	found, _ := t0.Find(t0111path)
+	fmt.Println(found)
+	fmt.Println(found == t0111)
 	return t0
 }

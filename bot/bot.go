@@ -1,27 +1,35 @@
 package bot
 
 import (
-	"fmt"
 	"log"
-	"strconv"
 	"time"
 
+	"github.com/orsenkucher/schedulebot/route"
+
+	"github.com/orsenkucher/schedulebot/sch"
+
 	"github.com/orsenkucher/schedulebot/creds"
+	"github.com/orsenkucher/schedulebot/root"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/orsenkucher/schedulebot/cloudfunc"
 )
 
 // Bot is a scheduler bot
 type Bot struct {
 	credential creds.Credential
 	api        *tgbotapi.BotAPI
+	Jobs       chan sch.Job
+	rootnode   *route.Tree
 }
 
 // NewBot creates new scheduler bot with provided credentials
-func NewBot(cr creds.Credential) *Bot {
-	b := &Bot{credential: cr}
+func NewBot(cr creds.Credential, root *route.Tree) *Bot {
+	b := &Bot{
+		credential: cr,
+		Jobs:       make(chan sch.Job),
+		rootnode:   root}
 	b.initAPI()
+	go b.processJobs()
 	return b
 }
 
@@ -41,8 +49,17 @@ func (b *Bot) initAPI() {
 	}
 }
 
+func (b *Bot) processJobs() {
+	for {
+		select {
+		case j := <-b.Jobs:
+			b.SpreadMessage(j.Subs, j.Event)
+		}
+	}
+}
+
 // Listen starts infinite listening
-func (b *Bot) Listen(chans map[string]chan SubEvent) {
+func (b *Bot) Listen(updsmap map[string]chan root.SubEvent) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
@@ -53,15 +70,15 @@ func (b *Bot) Listen(chans map[string]chan SubEvent) {
 
 	for update := range updates {
 		if update.CallbackQuery != nil {
-			handleCallback(b.api, update, chans)
+			b.handleCallback(update, updsmap)
 			continue
 		}
 
 		if update.Message != nil {
 			if update.Message.IsCommand() {
-				handleCommand(b.api, update)
+				b.handleCommand(update)
 			} else if update.Message.Text != "" {
-				handleMessage(b.api, update)
+				b.handleMessage(update)
 			}
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 			continue
@@ -80,77 +97,4 @@ func (b *Bot) SpreadMessage(users []int64, msg string) {
 			log.Println(err)
 		}
 	}
-}
-
-// ActivateSchedule is public
-func (b *Bot) ActivateSchedule(sch cloudfunc.Schedule, usersstr []cloudfunc.Subscriber, ch chan SubEvent) {
-	users := []int64{}
-	for i := 0; i < len(usersstr); i++ {
-		n, _ := strconv.ParseInt(usersstr[i].ID, 10, 64)
-		users = append(users, n)
-	}
-	for {
-		del, ind := calcNextSchedule(sch)
-		fmt.Println(users)
-		fmt.Println("sleep for:", del.Minutes())
-		time.Sleep(del)
-		newInf := map[int64]bool{}
-
-		for i := 0; i < len(users); i++ {
-			newInf[users[i]] = true
-		}
-
-	Loop:
-		for {
-			select {
-			case e := <-ch:
-				switch e.Action {
-				case Add:
-					fmt.Println("adding user ", e.ChatID)
-					newInf[e.ChatID] = true
-				case Del:
-					fmt.Println("deleting user ", e.ChatID)
-					newInf[e.ChatID] = false
-				}
-			default:
-				break Loop
-			}
-		}
-
-		users = make([]int64, 0, len(newInf))
-
-		for k, v := range newInf {
-			if v {
-				users = append(users, k)
-			}
-		}
-
-		fmt.Println(users)
-		b.SpreadMessage(users, sch.Event[ind])
-		fmt.Println("Success")
-	}
-}
-
-// MPW is total minutes in week
-const MPW = 7 * 60 * 24
-
-func calcNextSchedule(s cloudfunc.Schedule) (time.Duration, int) {
-	now := time.Now().UTC()
-	mins := cloudfunc.GetMinsOfWeek(now)
-	nextEvent := 0
-	minMins := 2*MPW + 1
-	_, thisWeek := time.Now().UTC().ISOWeek()
-	thisWeek %= 2
-
-	for i := 0; i < len(s.Event); i++ {
-		curmins := (s.Minute[i] - 5 - mins + MPW) % MPW
-		if s.Type[i] == (thisWeek+1)%2 {
-			curmins += MPW
-		}
-		if minMins > curmins && curmins != 0 {
-			nextEvent = i
-			minMins = curmins
-		}
-	}
-	return time.Duration(minMins) * time.Minute, nextEvent
 }

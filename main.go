@@ -1,57 +1,35 @@
 package main
 
 import (
-	"fmt"
-	"time"
-
-	"github.com/orsenkucher/schedulebot/creds"
-
 	"github.com/orsenkucher/schedulebot/bot"
-	"github.com/orsenkucher/schedulebot/cloudfunc"
+	"github.com/orsenkucher/schedulebot/creds"
 	"github.com/orsenkucher/schedulebot/fbclient"
+	"github.com/orsenkucher/schedulebot/route"
+	"github.com/orsenkucher/schedulebot/sch"
 )
 
 // *** ASAP ***
-// [.] Migalky (spin[up/down]) // for now just delete all spin="up" from sch.json 20.10.19 is "down" week
+// [+] Migalky (spin[up/down])
 // [+] Append sch.json with schs for Thu and Fri
+//
+// *** Current ***
+// [.] Generate schedule path from direcory it lies in
+// [.] Generate buttons by path like below
+//     Ukraine?.Mehmat.firstyear.math.group1.subgroup2
 //
 // *** Proposals ***
 // [.] Use hash to determine whether sch update is needed
-// [.] Generate buttons by path like below
-//     Ukraine?.Mehmat.firstyear.math.group1.subgroup2
 // [.] Custom schedules
 //
-// ***
-// В основе лежит карта map[int64]User
-// тип User глобальный и находится в model.User
-// у Юзера есть ID
-// у Юзера есть его текущий путь route routes.routeTree
-// у Юзера есть канал для общения с шедулером (возможно)
-//
-// Как только в луп бота приходит новое событие он первым делом находит в карте юзера
-//
-// У бота есть канал из сообщений для отправки, но его читает 30 раз в сек (возможно)
-//
 func main() {
+	fbclient.GenerateTestSchedule()
 	// fbclient.CreateSchFromJSON()
 
 	// /*
-	// fbclient.GenerateTestSchedule()
-	fmt.Println("Minutes from week start", cloudfunc.GetMinsOfWeek(time.Now()))
-	table := fbclient.FetchTable()
-	users := fbclient.FetchSubscribers()
-
-	fmt.Println(table[2])
-
-	b := bot.NewBot(creds.Cr459)
-
-	chans := map[string]chan bot.SubEvent{}
-
-	for _, sch := range table {
-		chans[sch.Name] = make(chan bot.SubEvent)
-		go b.ActivateSchedule(sch, users[sch.Name], chans[sch.Name])
-	}
-	b.Listen(chans)
+	b := bot.NewBot(creds.Cr459, route.Routes)
+	updsmap := sch.SpawnSchedulers(b.Jobs)
+	b.Listen(updsmap)
 	//*/
+
 	//fbclient.CreateSchedule()
 }

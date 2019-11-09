@@ -9,13 +9,10 @@ import (
 	"github.com/orsenkucher/schedulebot/cloudfunc"
 )
 
-// Table is public
-type Table []cloudfunc.Schedule
-
 const fetchSchsURL = "https://us-central1-scheduleuabot.cloudfunctions.net/FetchSchedules"
 
-// FetchTable is public
-func FetchTable() Table {
+// FetchSchedules is public
+func FetchSchedules() []cloudfunc.Schedule {
 	resp, err := http.Get(fetchSchsURL)
 	if err != nil {
 		log.Fatalln(err)
@@ -26,7 +23,7 @@ func FetchTable() Table {
 		log.Fatalln(err)
 	}
 	// fmt.Println(string(r))
-	var table Table
+	var table []cloudfunc.Schedule
 	json.Unmarshal(r, &table)
 	return table
 }

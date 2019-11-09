@@ -32,7 +32,7 @@ func SetSubscribers(users []int64, schName string) {
 
 // AddSubscriber is public
 func AddSubscriber(user int64, schName string) {
-	subscriberq := cloudfunc.SubscriberQuerie{
+	subscriberq := cloudfunc.SubscriberQuery{
 		ScheduleName: schName,
 		ID:           strconv.FormatInt(user, 10),
 	}
@@ -46,7 +46,7 @@ func AddSubscriber(user int64, schName string) {
 
 // DeleteSubscriber is public
 func DeleteSubscriber(user int64, schName string) {
-	subscriberq := cloudfunc.SubscriberQuerie{
+	subscriberq := cloudfunc.SubscriberQuery{
 		ScheduleName: schName,
 		ID:           strconv.FormatInt(user, 10),
 	}
