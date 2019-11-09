@@ -72,7 +72,7 @@ func (b *Bot) userByID(id int64) *user {
 }
 
 // Listen starts infinite listening
-func (b *Bot) Listen(chans map[string]chan root.SubEvent) {
+func (b *Bot) Listen(updsmap map[string]chan root.SubEvent) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
@@ -83,7 +83,7 @@ func (b *Bot) Listen(chans map[string]chan root.SubEvent) {
 
 	for update := range updates {
 		if update.CallbackQuery != nil {
-			b.handleCallback(update, chans)
+			b.handleCallback(update, updsmap)
 			continue
 		}
 

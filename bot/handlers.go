@@ -30,14 +30,14 @@ func (b *Bot) handleCommand(update tgbotapi.Update) {
 		if _, err := b.api.Send(msg); err != nil {
 			log.Panic(err)
 		}
-	case "reset", "unsub":
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID,
-			"Варианты отписки ("+update.Message.Chat.FirstName+")") // Unsub options ("+update.Message.Chat.FirstName+")"
-		msg.ReplyMarkup = inlineResetKeyboard
-		fmt.Println("Doing reset for user", update.Message.Chat.ID)
-		if _, err := b.api.Send(msg); err != nil {
-			log.Panic(err)
-		}
+	// case "reset", "unsub":
+	// 	msg := tgbotapi.NewMessage(update.Message.Chat.ID,
+	// 		"Варианты отписки ("+update.Message.Chat.FirstName+")") // Unsub options ("+update.Message.Chat.FirstName+")"
+	// 	msg.ReplyMarkup = inlineResetKeyboard
+	// 	fmt.Println("Doing reset for user", update.Message.Chat.ID)
+	// 	if _, err := b.api.Send(msg); err != nil {
+	// 		log.Panic(err)
+	// 	}
 	default:
 		return
 	}
@@ -67,23 +67,6 @@ func (b *Bot) handleCallback(
 			}
 			user.Route = childRoute
 		}
-
-	case strings.Contains(data, "back"):
-		fmt.Println(data)
-		user := b.userByID(chatID)
-		if parent := user.Route.Parent; parent != nil {
-			msg := tgbotapi.NewEditMessageText(user.ID, messageID, fmt.Sprintf("%s👇🏻", parent))
-			mkp := GenFor(parent)
-			msg.ReplyMarkup = &mkp
-			if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
-				log.Panic(err)
-			}
-			if _, err := b.api.Send(msg); err != nil {
-				log.Panic(err)
-			}
-			user.Route = parent
-		}
-
 	case strings.Contains(data, "sub"):
 		scheduleName := strings.Split(data, ":")[1]
 		ch, ok := chans[scheduleName]
@@ -100,6 +83,21 @@ func (b *Bot) handleCallback(
 			if _, err := b.api.Send(msg); err != nil {
 				log.Println(err)
 			}
+		}
+	case strings.Contains(data, "back"):
+		fmt.Println(data)
+		user := b.userByID(chatID)
+		if parent := user.Route.Parent; parent != nil {
+			msg := tgbotapi.NewEditMessageText(user.ID, messageID, fmt.Sprintf("%s👇🏻", parent))
+			mkp := GenFor(parent)
+			msg.ReplyMarkup = &mkp
+			if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
+				log.Panic(err)
+			}
+			if _, err := b.api.Send(msg); err != nil {
+				log.Panic(err)
+			}
+			user.Route = parent
 		}
 	case strings.Contains(data, "reset"):
 		scheduleName := strings.Split(data, ":")[1]
