@@ -7,35 +7,17 @@ import (
 	"github.com/orsenkucher/schedulebot/route"
 )
 
-var inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData(" 📆 1 група  ", "sub:group1"), // 👽 🔴
-		tgbotapi.NewInlineKeyboardButtonData(" 📆 2 група  ", "sub:group2"), //👥  🔵 👾 ⏱️
-	),
-)
-
-var inlineResetKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData(" ♻️ 1 група  ", "reset:group1"),
-		tgbotapi.NewInlineKeyboardButtonData(" ♻️ 2 група  ", "reset:group2"),
-	),
-)
-
-var cmdMapping = map[string]string{
-	"sub:group1":   "1 група",
-	"sub:group2":   "2 група",
-	"reset:group1": "1 група",
-	"reset:group2": "2 група",
-}
-
 // GenFor generates keyboard for provided route
-func GenFor(route *route.Tree) tgbotapi.InlineKeyboardMarkup {
+func GenFor(route *route.Tree) (tgbotapi.InlineKeyboardMarkup, bool) {
+	if route.Children == nil {
+		return tgbotapi.InlineKeyboardMarkup{}, false
+	}
 	buttons := make([]tgbotapi.InlineKeyboardButton, len(route.Children))
-	for i, c := range route.Children {
-		buttons[i] = tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf(" 📆 %s  ", c.Name), "route:"+c.Name)
+	for i, ch := range route.Children {
+		buttons[i] = tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf(" 📆 %s  ", ch.Name), "route:"+ch.MakePath())
 	}
 	if route.Parent != nil {
-		buttons = append([]tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(" 🔙 Back  ", "back:")}, buttons...)
+		buttons = append([]tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(" 🔙 Back  ", "route:"+route.Parent.MakePath())}, buttons...)
 	}
-	return tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(buttons...))
+	return tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(buttons...)), true
 }

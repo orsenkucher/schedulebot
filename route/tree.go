@@ -3,6 +3,7 @@ package route
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 )
 
 // Tree is a node (and a tree) of a tree data structure.
@@ -64,7 +65,8 @@ func (t *Tree) Find(path string) (*Tree, bool) {
 	var chain []string
 	err := json.Unmarshal([]byte(path), &chain)
 	if err != nil {
-		panic(err)
+		log.Println("route Tree.Find invalid path")
+		return nil, false
 	}
 	for _, name := range chain[1:] {
 		var ok bool

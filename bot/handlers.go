@@ -9,7 +9,6 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/orsenkucher/schedulebot/fbclient"
 	"github.com/orsenkucher/schedulebot/root"
-	"github.com/orsenkucher/schedulebot/route"
 )
 
 func (b *Bot) handleMessage(update tgbotapi.Update) {
@@ -23,10 +22,14 @@ func (b *Bot) handleMessage(update tgbotapi.Update) {
 func (b *Bot) handleCommand(update tgbotapi.Update) {
 	switch update.Message.Command() {
 	case "sub", "start", "go":
-		user := b.userByID(update.Message.Chat.ID)
-		msg := tgbotapi.NewMessage(user.ID, "Выбери свое расписание👇🏻") // ⬇️ 🎓 👇🏻
-		user.Route = route.Routes
-		msg.ReplyMarkup = GenFor(user.Route)
+		chatID := update.Message.Chat.ID
+		msg := tgbotapi.NewMessage(chatID, "Выбери свое расписание👇🏻") // ⬇️ 🎓 👇🏻
+		// user.Route = route.Routes
+		mkp, ok := GenFor(b.rootnode)
+		if !ok {
+			log.Panic("Here must be ok!")
+		}
+		msg.ReplyMarkup = mkp
 		if _, err := b.api.Send(msg); err != nil {
 			log.Panic(err)
 		}
@@ -52,68 +55,52 @@ func (b *Bot) handleCallback(
 	switch {
 	case strings.Contains(data, "route"):
 		fmt.Println(data)
-		childName := strings.Split(data, ":")[1]
-		user := b.userByID(chatID)
-		if childRoute, ok := user.Route.Select(childName); ok {
-			msg := tgbotapi.NewEditMessageText(user.ID, messageID, fmt.Sprintf("%s👇🏻", childRoute))
-			mkp := GenFor(childRoute)
-			msg.ReplyMarkup = &mkp
-			// msg := tgbotapi.NewEditMessageReplyMarkup(int64(user), messageID, GenFor(childRoute))
-			if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
-				log.Panic(err)
+		nodepath := strings.Split(data, ":")[1]
+		if node, ok := b.rootnode.Find(nodepath); ok {
+			msg := tgbotapi.NewEditMessageText(chatID, messageID, fmt.Sprintf("%s👇🏻", node))
+			if mkp, ok := GenFor(node); ok {
+				msg.ReplyMarkup = &mkp
+				if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
+					log.Panic(err)
+				}
+				if _, err := b.api.Send(msg); err != nil {
+					log.Panic(err)
+				}
+			} else {
+				schName := nodepath
+				ch, ok := chans[schName]
+				if ok {
+					fmt.Println(data)
+					ch <- root.SubEvent{Action: root.Add, SubID: chatID}
+					fbclient.AddSubscriber(chatID, schName)
+					// snackMsg := "Our congrats 🥂. We handled your sub!"
+					// snackMsg := "Ваша регистрация обработана 🥂 (" + cmdMapping[data] + ")"
+					snackMsg := "Поздравляю! Ты подписался на \"" + node.Name + "\". Увидимся на паре 🥂"
+					b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
+					msg := tgbotapi.NewMessage(chatID, snackMsg)
+					if _, err := b.api.Send(msg); err != nil {
+						log.Println(err)
+					}
+				} else {
+					log.Printf("Schedule was not found by name: %s\n", schName)
+				}
 			}
-			if _, err := b.api.Send(msg); err != nil {
-				log.Panic(err)
-			}
-			user.Route = childRoute
 		}
-	case strings.Contains(data, "sub"):
-		scheduleName := strings.Split(data, ":")[1]
-		ch, ok := chans[scheduleName]
-		if ok {
-			fmt.Println(data)
-			ch <- root.SubEvent{Action: root.Add, SubID: chatID}
-			fbclient.AddSubscriber(chatID, scheduleName)
-			// snackMsg := "Our congrats 🥂. We handled your sub!"
-			// Поздравляю! Ты подписался на бота! До скорых встреч на паре!
-			snackMsg := "Поздравляю! Ты подписался на \"" + cmdMapping[data] + "\". Увидимся на паре 🥂"
-			// snackMsg := "Ваша регистрация обработана 🥂 (" + cmdMapping[data] + ")"
-			b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
-			msg := tgbotapi.NewMessage(chatID, snackMsg)
-			if _, err := b.api.Send(msg); err != nil {
-				log.Println(err)
-			}
-		}
-	case strings.Contains(data, "back"):
-		fmt.Println(data)
-		user := b.userByID(chatID)
-		if parent := user.Route.Parent; parent != nil {
-			msg := tgbotapi.NewEditMessageText(user.ID, messageID, fmt.Sprintf("%s👇🏻", parent))
-			mkp := GenFor(parent)
-			msg.ReplyMarkup = &mkp
-			if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
-				log.Panic(err)
-			}
-			if _, err := b.api.Send(msg); err != nil {
-				log.Panic(err)
-			}
-			user.Route = parent
-		}
-	case strings.Contains(data, "reset"):
-		scheduleName := strings.Split(data, ":")[1]
+		// case strings.Contains(data, "reset"):
+		// 	scheduleName := strings.Split(data, ":")[1]
 
-		ch, ok := chans[scheduleName]
-		if ok {
-			fmt.Println(data)
-			ch <- root.SubEvent{Action: root.Del, SubID: chatID}
-			fbclient.DeleteSubscriber(chatID, scheduleName)
-			// snackMsg := "Un️subscribed ♻️" // ☠️
-			snackMsg := "Отписка проведена ♻️ (" + cmdMapping[data] + ")"
-			b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
-			msg := tgbotapi.NewMessage(chatID, snackMsg)
-			if _, err := b.api.Send(msg); err != nil {
-				log.Println(err)
-			}
-		}
+		// 	ch, ok := chans[scheduleName]
+		// 	if ok {
+		// 		fmt.Println(data)
+		// 		ch <- root.SubEvent{Action: root.Del, SubID: chatID}
+		// 		fbclient.DeleteSubscriber(chatID, scheduleName)
+		// 		// snackMsg := "Un️subscribed ♻️" // ☠️
+		// 		snackMsg := "Отписка проведена ♻️ (" + cmdMapping[data] + ")"
+		// 		b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
+		// 		msg := tgbotapi.NewMessage(chatID, snackMsg)
+		// 		if _, err := b.api.Send(msg); err != nil {
+		// 			log.Println(err)
+		// 		}
+		// 	}
 	}
 }

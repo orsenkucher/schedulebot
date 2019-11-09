@@ -4,6 +4,7 @@ import (
 	"github.com/orsenkucher/schedulebot/bot"
 	"github.com/orsenkucher/schedulebot/creds"
 	"github.com/orsenkucher/schedulebot/fbclient"
+	"github.com/orsenkucher/schedulebot/route"
 	"github.com/orsenkucher/schedulebot/sch"
 )
 
@@ -25,7 +26,7 @@ func main() {
 	// fbclient.CreateSchFromJSON()
 
 	// /*
-	b := bot.NewBot(creds.Cr459)
+	b := bot.NewBot(creds.Cr459, route.Routes)
 	updsmap := sch.SpawnSchedulers(b.Jobs)
 	b.Listen(updsmap)
 	//*/

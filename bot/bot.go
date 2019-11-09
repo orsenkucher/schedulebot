@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/orsenkucher/schedulebot/route"
+
 	"github.com/orsenkucher/schedulebot/sch"
 
 	"github.com/orsenkucher/schedulebot/creds"
@@ -18,20 +19,15 @@ type Bot struct {
 	credential creds.Credential
 	api        *tgbotapi.BotAPI
 	Jobs       chan sch.Job
-	users      map[int64]*user
-}
-
-type user struct {
-	ID    int64
-	Route *route.Tree
+	rootnode   *route.Tree
 }
 
 // NewBot creates new scheduler bot with provided credentials
-func NewBot(cr creds.Credential) *Bot {
+func NewBot(cr creds.Credential, root *route.Tree) *Bot {
 	b := &Bot{
 		credential: cr,
 		Jobs:       make(chan sch.Job),
-		users:      make(map[int64]*user)}
+		rootnode:   root}
 	b.initAPI()
 	go b.processJobs()
 	return b
@@ -60,15 +56,6 @@ func (b *Bot) processJobs() {
 			b.SpreadMessage(j.Subs, j.Event)
 		}
 	}
-}
-
-func (b *Bot) userByID(id int64) *user {
-	if u := b.users[id]; u == nil {
-		b.users[id] = &user{
-			ID:    id,
-			Route: route.Routes}
-	}
-	return b.users[id]
 }
 
 // Listen starts infinite listening
