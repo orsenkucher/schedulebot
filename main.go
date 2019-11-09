@@ -34,12 +34,9 @@ func main() {
 	// fbclient.CreateSchFromJSON()
 
 	// /*
-
-	// schedStream := map[string]chan subs.SubEvent{}
 	b := bot.NewBot(creds.Cr459)
 	subStream := sch.SpawnSchedulers(b.Jobs)
 	b.Listen(subStream)
-
 	//*/
 
 	//fbclient.CreateSchedule()

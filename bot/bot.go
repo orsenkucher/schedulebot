@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/orsenkucher/schedulebot/route"
 	"github.com/orsenkucher/schedulebot/sch"
 
 	"github.com/orsenkucher/schedulebot/creds"
@@ -17,11 +18,20 @@ type Bot struct {
 	credential creds.Credential
 	api        *tgbotapi.BotAPI
 	Jobs       chan sch.Job
+	users      map[int64]*user
+}
+
+type user struct {
+	ID    int64
+	Route *route.Tree
 }
 
 // NewBot creates new scheduler bot with provided credentials
 func NewBot(cr creds.Credential) *Bot {
-	b := &Bot{credential: cr, Jobs: make(chan sch.Job)}
+	b := &Bot{
+		credential: cr,
+		Jobs:       make(chan sch.Job),
+		users:      make(map[int64]*user)}
 	b.initAPI()
 	go b.processJobs()
 	return b
@@ -52,6 +62,15 @@ func (b *Bot) processJobs() {
 	}
 }
 
+func (b *Bot) userByID(id int64) *user {
+	if u := b.users[id]; u == nil {
+		b.users[id] = &user{
+			ID:    id,
+			Route: route.Routes}
+	}
+	return b.users[id]
+}
+
 // Listen starts infinite listening
 func (b *Bot) Listen(chans map[string]chan root.SubEvent) {
 	u := tgbotapi.NewUpdate(0)
@@ -64,15 +83,15 @@ func (b *Bot) Listen(chans map[string]chan root.SubEvent) {
 
 	for update := range updates {
 		if update.CallbackQuery != nil {
-			handleCallback(b.api, update, chans)
+			b.handleCallback(update, chans)
 			continue
 		}
 
 		if update.Message != nil {
 			if update.Message.IsCommand() {
-				handleCommand(b.api, update)
+				b.handleCommand(update)
 			} else if update.Message.Text != "" {
-				handleMessage(b.api, update)
+				b.handleMessage(update)
 			}
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 			continue

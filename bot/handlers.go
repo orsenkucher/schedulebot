@@ -3,22 +3,16 @@ package bot
 import (
 	"fmt"
 	"log"
+
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/orsenkucher/schedulebot/fbclient"
 	"github.com/orsenkucher/schedulebot/root"
 	"github.com/orsenkucher/schedulebot/route"
-	"github.com/orsenkucher/schedulebot/user"
 )
 
-var currentRoutes = make(map[user.User]*route.Tree)
-
-func sendOnChan(ch chan root.SubEvent, e root.SubEvent) {
-	ch <- e
-}
-
-func handleMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+func (b *Bot) handleMessage(update tgbotapi.Update) {
 	// // Do nothing
 	// msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
 	// if _, err := bot.Send(msg); err != nil {
@@ -26,14 +20,14 @@ func handleMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	// }
 }
 
-func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+func (b *Bot) handleCommand(update tgbotapi.Update) {
 	switch update.Message.Command() {
 	case "sub", "start", "go":
-		user := user.User(update.Message.Chat.ID)
-		msg := tgbotapi.NewMessage(int64(user), "Выбери свое расписание👇🏻") // ⬇️ 🎓 👇🏻
-		currentRoutes[user] = route.Routes
-		msg.ReplyMarkup = GenFor(currentRoutes[user])
-		if _, err := bot.Send(msg); err != nil {
+		user := b.userByID(update.Message.Chat.ID)
+		msg := tgbotapi.NewMessage(user.ID, "Выбери свое расписание👇🏻") // ⬇️ 🎓 👇🏻
+		user.Route = route.Routes
+		msg.ReplyMarkup = GenFor(user.Route)
+		if _, err := b.api.Send(msg); err != nil {
 			log.Panic(err)
 		}
 	case "reset", "unsub":
@@ -41,7 +35,7 @@ func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			"Варианты отписки ("+update.Message.Chat.FirstName+")") // Unsub options ("+update.Message.Chat.FirstName+")"
 		msg.ReplyMarkup = inlineResetKeyboard
 		fmt.Println("Doing reset for user", update.Message.Chat.ID)
-		if _, err := bot.Send(msg); err != nil {
+		if _, err := b.api.Send(msg); err != nil {
 			log.Panic(err)
 		}
 	default:
@@ -49,8 +43,7 @@ func handleCommand(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 }
 
-func handleCallback(
-	bot *tgbotapi.BotAPI,
+func (b *Bot) handleCallback(
 	update tgbotapi.Update,
 	chans map[string]chan root.SubEvent) {
 	data := update.CallbackQuery.Data
@@ -60,52 +53,51 @@ func handleCallback(
 	case strings.Contains(data, "route"):
 		fmt.Println(data)
 		childName := strings.Split(data, ":")[1]
-		user := user.User(chatID)
-		if route, ok := currentRoutes[user]; ok {
-			if childRoute, ok := route.Select(childName); ok {
-				msg := tgbotapi.NewEditMessageText(int64(user), messageID, fmt.Sprintf("%s👇🏻", childRoute))
-				mkp := GenFor(childRoute)
-				msg.ReplyMarkup = &mkp
-				// msg := tgbotapi.NewEditMessageReplyMarkup(int64(user), messageID, GenFor(childRoute))
-				if _, err := bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
-					log.Panic(err)
-				}
-				if _, err := bot.Send(msg); err != nil {
-					log.Panic(err)
-				}
-				currentRoutes[user] = childRoute
+		user := b.userByID(chatID)
+		if childRoute, ok := user.Route.Select(childName); ok {
+			msg := tgbotapi.NewEditMessageText(user.ID, messageID, fmt.Sprintf("%s👇🏻", childRoute))
+			mkp := GenFor(childRoute)
+			msg.ReplyMarkup = &mkp
+			// msg := tgbotapi.NewEditMessageReplyMarkup(int64(user), messageID, GenFor(childRoute))
+			if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
+				log.Panic(err)
 			}
+			if _, err := b.api.Send(msg); err != nil {
+				log.Panic(err)
+			}
+			user.Route = childRoute
 		}
+
 	case strings.Contains(data, "back"):
 		fmt.Println(data)
-		user := user.User(chatID)
-		if route, ok := currentRoutes[user]; ok {
-			parent := route.Parent
-			msg := tgbotapi.NewEditMessageText(int64(user), messageID, fmt.Sprintf("%s👇🏻", parent))
+		user := b.userByID(chatID)
+		if parent := user.Route.Parent; parent != nil {
+			msg := tgbotapi.NewEditMessageText(user.ID, messageID, fmt.Sprintf("%s👇🏻", parent))
 			mkp := GenFor(parent)
 			msg.ReplyMarkup = &mkp
-			if _, err := bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
+			if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
 				log.Panic(err)
 			}
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := b.api.Send(msg); err != nil {
 				log.Panic(err)
 			}
-			currentRoutes[user] = parent
+			user.Route = parent
 		}
+
 	case strings.Contains(data, "sub"):
 		scheduleName := strings.Split(data, ":")[1]
 		ch, ok := chans[scheduleName]
 		if ok {
 			fmt.Println(data)
-			go sendOnChan(ch, root.SubEvent{Action: root.Add, SubID: chatID})
+			ch <- root.SubEvent{Action: root.Add, SubID: chatID}
 			fbclient.AddSubscriber(chatID, scheduleName)
 			// snackMsg := "Our congrats 🥂. We handled your sub!"
 			// Поздравляю! Ты подписался на бота! До скорых встреч на паре!
 			snackMsg := "Поздравляю! Ты подписался на \"" + cmdMapping[data] + "\". Увидимся на паре 🥂"
 			// snackMsg := "Ваша регистрация обработана 🥂 (" + cmdMapping[data] + ")"
-			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
+			b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
 			msg := tgbotapi.NewMessage(chatID, snackMsg)
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := b.api.Send(msg); err != nil {
 				log.Println(err)
 			}
 		}
@@ -115,13 +107,13 @@ func handleCallback(
 		ch, ok := chans[scheduleName]
 		if ok {
 			fmt.Println(data)
-			go sendOnChan(ch, root.SubEvent{Action: root.Del, SubID: chatID})
+			ch <- root.SubEvent{Action: root.Del, SubID: chatID}
 			fbclient.DeleteSubscriber(chatID, scheduleName)
 			// snackMsg := "Un️subscribed ♻️" // ☠️
 			snackMsg := "Отписка проведена ♻️ (" + cmdMapping[data] + ")"
-			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
+			b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
 			msg := tgbotapi.NewMessage(chatID, snackMsg)
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := b.api.Send(msg); err != nil {
 				log.Println(err)
 			}
 		}
