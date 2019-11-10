@@ -18,10 +18,8 @@ type Tree struct {
 }
 
 func (t *Tree) String() string {
-	if t.Parent == nil {
-		return t.Name
-	}
-	return t.Parent.String() + " ⫶ " + t.Name
+	chain := t.chain()
+	return strings.Join(chain, " ⫶ ")
 }
 
 // MakePath is used to create valid path to current node
@@ -40,11 +38,10 @@ func (t *Tree) CalcHash() string {
 }
 
 func (t *Tree) chain() []string {
-	chain := []string{t.Name}
 	if t.Parent == nil {
-		return chain
+		return nil
 	}
-	return append(t.Parent.chain(), chain...)
+	return append(t.Parent.chain(), t.Name)
 }
 
 func (t *Tree) makeChild(name string) *Tree {
@@ -76,7 +73,7 @@ func (t *Tree) Find(path string) (*Tree, bool) {
 		log.Println("route Tree.Find invalid path")
 		return nil, false
 	}
-	for _, name := range chain[1:] {
+	for _, name := range chain {
 		var ok bool
 		t, ok = t.Select(name)
 		if !ok {

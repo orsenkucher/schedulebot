@@ -33,7 +33,6 @@ func (b *Bot) handleMessage(update tgbotapi.Update) {
 func (b *Bot) onSub(update tgbotapi.Update) {
 	chatID := update.Message.Chat.ID
 	msg := tgbotapi.NewMessage(chatID, "Выбери свое расписание👇🏻") // ⬇️ 🎓 👇🏻
-	// user.Route = route.Routes
 	mkp, ok := GenFor(b.root.Rootnode)
 	if !ok {
 		log.Panic("Here must be ok!")

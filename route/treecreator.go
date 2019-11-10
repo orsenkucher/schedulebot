@@ -22,7 +22,7 @@ type LocalCreator struct {
 
 // Create walks through files starting from lc.Root and builds route.Tree
 func (lc LocalCreator) Create() *Tree {
-	t := &Tree{Name: "Root"}
+	t := &Tree{Name: "root"}
 	lc.fillTree(t, lc.Root)
 	return t
 }
