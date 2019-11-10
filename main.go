@@ -28,16 +28,17 @@ func main() {
 	// /*
 	var lc route.TreeCreator = route.LocalCreator{Root: root.Rootdir}
 	t := &route.Tree{Name: "root"}
-	// ch := t
-	// fn := func(_, name string) { ch = ch.MakeChild(name) }
 	fn := func(path, name string) route.MyFn {
 		ch := t.MakeChild(name)
-		var fn2 func(path, name string) route.MyFn
-		fn2 = func(path, name string) route.MyFn {
-			ch = ch.MakeChild(name)
-			return fn2
+		var spawnfn func(tr *route.Tree) route.MyFn
+		spawnfn = func(tr *route.Tree) route.MyFn {
+			return func(path, name string) route.MyFn {
+				ch2 := tr.MakeChild(name)
+				return spawnfn(ch2)
+			}
 		}
-		return fn2
+
+		return spawnfn(ch)
 	}
 	lc.Create(fn)
 	t.Print()
@@ -48,8 +49,4 @@ func main() {
 	//*/
 
 	//fbclient.CreateSchedule()
-}
-
-func Kek(path, name string) route.MyFn {
-	return nil
 }
