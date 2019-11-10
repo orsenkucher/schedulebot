@@ -9,7 +9,7 @@ import (
 // TreeCreator is capable of creating route tree
 // from filesystem or firestore structure or whatever
 type TreeCreator interface {
-	Create() *Tree
+	Create(MyFn)
 }
 
 // LocalCreator creates route tree from local file system
@@ -17,14 +17,19 @@ type LocalCreator struct {
 	Root string
 }
 
+// type ChildMaker interface{
+
+// }
+
+// MyFn recursive fn
+type MyFn func(path, name string) MyFn
+
 // Create walks through files starting from lc.Root and builds route.Tree
-func (lc LocalCreator) Create() *Tree {
-	t := &Tree{Name: "root"}
-	lc.fillTree(t, lc.Root)
-	return t
+func (lc LocalCreator) Create(fn MyFn) {
+	lc.fillTree(fn, lc.Root)
 }
 
-func (lc LocalCreator) fillTree(t *Tree, path string) {
+func (lc LocalCreator) fillTree(fn MyFn, path string) {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		panic(err)
@@ -34,9 +39,9 @@ func (lc LocalCreator) fillTree(t *Tree, path string) {
 		if !file.IsDir() {
 			name = strings.TrimSuffix(name, filepath.Ext(name))
 		}
-		c := t.makeChild(name)
+		fn := fn(path, name)
 		if file.IsDir() {
-			lc.fillTree(c, filepath.Join(path, name))
+			lc.fillTree(fn, filepath.Join(path, name))
 		}
 	}
 }

@@ -1,5 +1,15 @@
 package route
 
+// // PathMaker is able to make path to itself
+// type PathMaker interface {
+// 	MakePath() string
+// }
+
+// // Hash64Calculator can calc his Hash in Base64 representation
+// type Hash64Calculator interface {
+// 	CalcHash() string
+// }
+
 // TreeRoot is the root node of route.Tree
 type TreeRoot struct {
 	Rootnode *Tree
@@ -16,7 +26,7 @@ func NewTreeRoot(rootnode *Tree) *TreeRoot {
 }
 
 func buildHashMap(from *Tree, hashmap *map[string]string) *map[string]string {
-	(*hashmap)[from.CalcHash()] = from.MakePath()
+	(*hashmap)[from.CalcHash64()] = from.MakePath()
 	for _, child := range from.Children {
 		buildHashMap(child, hashmap)
 	}

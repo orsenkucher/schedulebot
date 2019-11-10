@@ -27,7 +27,19 @@ func main() {
 
 	// /*
 	var lc route.TreeCreator = route.LocalCreator{Root: root.Rootdir}
-	t := lc.Create()
+	t := &route.Tree{Name: "root"}
+	// ch := t
+	// fn := func(_, name string) { ch = ch.MakeChild(name) }
+	fn := func(path, name string) route.MyFn {
+		ch := t.MakeChild(name)
+		var fn2 func(path, name string) route.MyFn
+		fn2 = func(path, name string) route.MyFn {
+			ch = ch.MakeChild(name)
+			return fn2
+		}
+		return fn2
+	}
+	lc.Create(fn)
 	t.Print()
 	tr := route.NewTreeRoot(t)
 	b := bot.NewBot(creds.Cr459, tr)
@@ -36,4 +48,8 @@ func main() {
 	//*/
 
 	//fbclient.CreateSchedule()
+}
+
+func Kek(path, name string) route.MyFn {
+	return nil
 }

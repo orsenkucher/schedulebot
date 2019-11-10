@@ -1,6 +1,8 @@
 package fbclient
 
-import "github.com/orsenkucher/schedulebot/route"
+import (
+	"github.com/orsenkucher/schedulebot/route"
+)
 
 // SchTree is like route.Tree, but with schpath pointed to schedule file
 type SchTree struct {
