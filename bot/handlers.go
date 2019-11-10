@@ -11,6 +11,17 @@ import (
 	"github.com/orsenkucher/schedulebot/root"
 )
 
+func (b *Bot) handleCommand(update tgbotapi.Update) {
+	switch update.Message.Command() {
+	case "sub", "start", "go":
+		b.onSub(update)
+	case "reset", "unsub":
+		b.onReset(update)
+	default:
+		return
+	}
+}
+
 func (b *Bot) handleMessage(update tgbotapi.Update) {
 	// // Do nothing
 	// msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
@@ -19,21 +30,21 @@ func (b *Bot) handleMessage(update tgbotapi.Update) {
 	// }
 }
 
-func (b *Bot) handleCommand(update tgbotapi.Update) {
-	switch update.Message.Command() {
-	case "sub", "start", "go":
-		chatID := update.Message.Chat.ID
-		msg := tgbotapi.NewMessage(chatID, "Выбери свое расписание👇🏻") // ⬇️ 🎓 👇🏻
-		// user.Route = route.Routes
-		mkp, ok := GenFor(b.rootnode)
-		if !ok {
-			log.Panic("Here must be ok!")
-		}
-		msg.ReplyMarkup = mkp
-		if _, err := b.api.Send(msg); err != nil {
-			log.Panic(err)
-		}
-	// case "reset", "unsub":
+func (b *Bot) onSub(update tgbotapi.Update) {
+	chatID := update.Message.Chat.ID
+	msg := tgbotapi.NewMessage(chatID, "Выбери свое расписание👇🏻") // ⬇️ 🎓 👇🏻
+	// user.Route = route.Routes
+	mkp, ok := GenFor(b.rootnode)
+	if !ok {
+		log.Panic("Here must be ok!")
+	}
+	msg.ReplyMarkup = mkp
+	if _, err := b.api.Send(msg); err != nil {
+		log.Panic(err)
+	}
+}
+
+func (b *Bot) onReset(update tgbotapi.Update) {
 	// 	msg := tgbotapi.NewMessage(update.Message.Chat.ID,
 	// 		"Варианты отписки ("+update.Message.Chat.FirstName+")") // Unsub options ("+update.Message.Chat.FirstName+")"
 	// 	msg.ReplyMarkup = inlineResetKeyboard
@@ -41,9 +52,6 @@ func (b *Bot) handleCommand(update tgbotapi.Update) {
 	// 	if _, err := b.api.Send(msg); err != nil {
 	// 		log.Panic(err)
 	// 	}
-	default:
-		return
-	}
 }
 
 func (b *Bot) handleCallback(
@@ -82,6 +90,8 @@ func (b *Bot) handleCallback(
 						log.Println(err)
 					}
 				} else {
+					snackMsg := "Этот шедуль уже не в базе"
+					b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
 					log.Printf("Schedule was not found by name: %s\n", schName)
 				}
 			}

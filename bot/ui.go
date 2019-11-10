@@ -14,7 +14,11 @@ func GenFor(route *route.Tree) (tgbotapi.InlineKeyboardMarkup, bool) {
 	}
 	buttons := make([]tgbotapi.InlineKeyboardButton, len(route.Children))
 	for i, ch := range route.Children {
-		buttons[i] = tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf(" 📆 %s  ", ch.Name), "route:"+ch.MakePath())
+		icon := "📂"
+		if ch.Children == nil {
+			icon = "📆"
+		}
+		buttons[i] = tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf(" %s %s  ", icon, ch.Name), "route:"+ch.MakePath())
 	}
 	if route.Parent != nil {
 		buttons = append([]tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(" 🔙 Back  ", "route:"+route.Parent.MakePath())}, buttons...)

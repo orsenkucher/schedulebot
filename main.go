@@ -14,7 +14,7 @@ import (
 //
 // *** Current ***
 // [.] Generate schedule path from direcory it lies in
-// [.] Generate buttons by path like below
+// [+] Generate buttons by path like below
 //     Ukraine?.Mehmat.firstyear.math.group1.subgroup2
 //
 // *** Proposals ***
