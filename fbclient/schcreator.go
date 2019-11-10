@@ -14,6 +14,7 @@ import (
 
 const mpw = root.MPW
 const schFile = "fbclient/sch.json"
+const rootdir = "data"
 
 // Event represents an event
 type Event struct {

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 )
 
 // Tree is a node (and a tree) of a tree data structure.
@@ -76,6 +77,20 @@ func (t *Tree) Find(path string) (*Tree, bool) {
 		}
 	}
 	return t, true
+}
+
+// Print prints this tree
+func (t *Tree) Print() {
+	t.print(1)
+}
+
+func (t *Tree) print(n int) {
+	fmt.Println(t.Name) // ┊ ╰
+	for _, child := range t.Children {
+		fmt.Print(strings.Repeat("  ", n))
+		fmt.Print("╰")
+		child.print(n + 1)
+	}
 }
 
 // Routes are possible routes
