@@ -34,7 +34,7 @@ func (b *Bot) onSub(update tgbotapi.Update) {
 	chatID := update.Message.Chat.ID
 	msg := tgbotapi.NewMessage(chatID, "Выбери свое расписание👇🏻") // ⬇️ 🎓 👇🏻
 	// user.Route = route.Routes
-	mkp, ok := GenFor(b.rootnode)
+	mkp, ok := GenFor(b.root.Rootnode)
 	if !ok {
 		log.Panic("Here must be ok!")
 	}
@@ -63,8 +63,8 @@ func (b *Bot) handleCallback(
 	switch {
 	case strings.Contains(data, "route"):
 		fmt.Println(data)
-		nodepath := strings.Split(data, ":")[1]
-		if node, ok := b.rootnode.Find(nodepath); ok {
+		nodehash := strings.Split(data, ":")[1]
+		if node, ok := b.root.Find(nodehash); ok {
 			msg := tgbotapi.NewEditMessageText(chatID, messageID, fmt.Sprintf("%s👇🏻", node))
 			if mkp, ok := GenFor(node); ok {
 				msg.ReplyMarkup = &mkp
@@ -75,7 +75,7 @@ func (b *Bot) handleCallback(
 					log.Panic(err)
 				}
 			} else {
-				schName := nodepath
+				schName := node.MakePath()
 				ch, ok := chans[schName]
 				if ok {
 					fmt.Println(data)

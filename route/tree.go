@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"strings"
+
+	"github.com/orsenkucher/schedulebot/hash"
 )
 
 // Tree is a node (and a tree) of a tree data structure.
@@ -30,6 +32,11 @@ func (t *Tree) MakePath() string {
 		panic(err)
 	}
 	return string(bytes)
+}
+
+// CalcHash calculates unique hash for current node path
+func (t *Tree) CalcHash() string {
+	return hash.EncodeAsBase64(t.MakePath())
 }
 
 func (t *Tree) chain() []string {

@@ -21,7 +21,6 @@ import (
 // [.] Custom schedules
 //
 func main() {
-
 	// fbclient.GenerateTestSchedule()
 	// fbclient.CreateSchFromJSON()
 
@@ -29,7 +28,8 @@ func main() {
 	var lc route.TreeCreator = route.LocalCreator{Root: route.Rootdir}
 	t := lc.Create()
 	t.Print()
-	b := bot.NewBot(creds.Cr459, t)
+	tr := route.NewTreeRoot(t)
+	b := bot.NewBot(creds.Cr459, tr)
 	updsmap := sch.SpawnSchedulers(b.Jobs)
 	b.Listen(updsmap)
 	//*/

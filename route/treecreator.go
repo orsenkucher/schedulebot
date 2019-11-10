@@ -3,6 +3,7 @@ package route
 import (
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 )
 
 // TreeCreator is capable of creating route tree
@@ -33,10 +34,12 @@ func (lc LocalCreator) fillTree(t *Tree, path string) {
 	}
 	for _, file := range files {
 		name := file.Name()
+		if !file.IsDir() {
+			name = strings.TrimSuffix(name, filepath.Ext(name))
+		}
 		c := t.makeChild(name)
 		if file.IsDir() {
 			lc.fillTree(c, filepath.Join(path, name))
 		}
 	}
-
 }

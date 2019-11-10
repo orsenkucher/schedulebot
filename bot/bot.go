@@ -19,15 +19,15 @@ type Bot struct {
 	credential creds.Credential
 	api        *tgbotapi.BotAPI
 	Jobs       chan sch.Job
-	rootnode   *route.Tree
+	root       *route.TreeRoot
 }
 
 // NewBot creates new scheduler bot with provided credentials
-func NewBot(cr creds.Credential, root *route.Tree) *Bot {
+func NewBot(cr creds.Credential, root *route.TreeRoot) *Bot {
 	b := &Bot{
 		credential: cr,
 		Jobs:       make(chan sch.Job),
-		rootnode:   root}
+		root:       root}
 	b.initAPI()
 	go b.processJobs()
 	return b
