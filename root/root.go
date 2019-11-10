@@ -31,3 +31,9 @@ const (
 
 // MPW is total minutes in week
 const MPW = 7 * 60 * 24
+
+// Rootdir path to the root directory
+const Rootdir = "data"
+
+// SchFile path to file with old schedule
+const SchFile = "fbclient/sch.json"

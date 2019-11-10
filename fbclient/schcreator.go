@@ -13,8 +13,6 @@ import (
 )
 
 const mpw = root.MPW
-const schFile = "fbclient/sch.json"
-const rootdir = "data"
 
 // Event represents an event
 type Event struct {
@@ -30,9 +28,14 @@ type Schedule struct {
 	Events []Event `json:"events"`
 }
 
+// CreateSchFromTree updates database with schedules from tree
+func CreateSchFromTree(root *SchTree) {
+
+}
+
 // CreateSchFromJSON is schedule creator v2, that read data from json
-func CreateSchFromJSON() {
-	bytes, err := readJSON(schFile)
+func CreateSchFromJSON(path string) {
+	bytes, err := readJSON(path)
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +47,7 @@ func CreateSchFromJSON() {
 			fmt.Println(e)
 		}
 	}
-	// fmt.Scanln()
+
 	fireSchs := makeFirestoreSchedules(schs)
 	json.Unmarshal(bytes, &schs)
 	for _, s := range fireSchs {
@@ -52,7 +55,6 @@ func CreateSchFromJSON() {
 			fmt.Println(e, s.Event[i])
 		}
 	}
-	// fmt.Scanln()
 
 	count := len(fireSchs)
 	var wg sync.WaitGroup
@@ -114,7 +116,7 @@ func makeFirestoreSchedules(schs []Schedule) []cloudfunc.Schedule {
 }
 
 func readJSON(path string) ([]byte, error) {
-	j, err := ioutil.ReadFile(schFile)
+	j, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

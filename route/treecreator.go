@@ -12,9 +12,6 @@ type TreeCreator interface {
 	Create() *Tree
 }
 
-// Rootdir path to the root directory
-const Rootdir = "data"
-
 // LocalCreator creates route tree from local file system
 type LocalCreator struct {
 	Root string
