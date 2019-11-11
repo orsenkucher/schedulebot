@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -29,7 +30,10 @@ func NewBot(cr creds.Credential, root *route.TreeRoot) *Bot {
 		Jobs:       make(chan sch.Job),
 		root:       root}
 	b.initAPI()
-	go b.processJobs()
+	// go b.processJobs()
+	msg := tgbotapi.NewMessage(233768128, "б̴̘̖̫̘̜̟̤̹͇͔̂̑̄͛̽̕͜͝ͅи̷̛͔͇̖̟̰̋̆о̷̝̋̇̐̓̇͌̂̈͂͌̚̕̕м̴̳̭͔̯̥͎͇̹̆а̷̨̖̞̞̺̳̘̞͔̬͙̺̳͍̻͂̇̔͌͂̾̋̀̈́̕̕с̵̢̨̨͎͙̰̤̮̫̯̤̗͓̬́̂͛ͅс̵̡̜̖͓̙̰̺̠͚͓͗̅̑̒а̷̨̼͔̜̟̺̬̪̭̞̲̥̪̘͐̌̋̈́̈́́̈́̽͌̏̕͝͝ͅ ̵̨̪͈̪͕̦̹̤̼̖͎͕͕͗͗̏͆̀̊̕͝͝в̶̩͖͈͉͉̦̈͆̔̑͂о̸̠̪̱̹͈̌л̷͎̲̤͈̖̰͌̃о̵̜͇̹̪̫̬̙̙̭̫͔͕̬͂́͘͝ͅс̸̨̯̭͈͊͆̽͋̄̈́ӓ̸̢̢̖̩̳̥̱̬͓͇͚̽͛͊͌́̑͋̓͂̕͜͠т̷͍̱̥̣̽͛͂̈́͝͝а̵̨̢̲̟̫̖̹̠͉̤̭̭͔̠̃͊̋̽̍̚͜я̷͈̦̼̜̘͉̻̱͖̺͕̙͊̈̅̄̈́͐͑̀͋͆̒͛͗͘̕ͅ")
+	_, err := b.api.Send(msg)
+	fmt.Println(err)
 	return b
 }
 

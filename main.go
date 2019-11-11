@@ -3,9 +3,6 @@ package main
 import (
 	"github.com/orsenkucher/schedulebot/bot"
 	"github.com/orsenkucher/schedulebot/creds"
-	"github.com/orsenkucher/schedulebot/root"
-	"github.com/orsenkucher/schedulebot/route"
-	"github.com/orsenkucher/schedulebot/sch"
 )
 
 // *** ASAP ***
@@ -26,27 +23,25 @@ func main() {
 	// fbclient.CreateSchFromJSON(root.SchFile)
 
 	// /*
-	var lc route.TreeCreator = route.LocalCreator{Root: root.Rootdir}
-	t := &route.Tree{Name: "root"}
-	fn := func(path, name string) route.MyFn {
-		ch := t.MakeChild(name)
-		var spawnfn func(tr *route.Tree) route.MyFn
-		spawnfn = func(tr *route.Tree) route.MyFn {
-			return func(path, name string) route.MyFn {
-				ch2 := tr.MakeChild(name)
-				return spawnfn(ch2)
-			}
-		}
-
-		return spawnfn(ch)
-	}
-	lc.Create(fn)
-	t.Print()
-	tr := route.NewTreeRoot(t)
-	b := bot.NewBot(creds.Cr459, tr)
-	updsmap := sch.SpawnSchedulers(b.Jobs)
-	b.Listen(updsmap)
+	// var lc route.TreeCreator = route.LocalCreator{Root: root.Rootdir}
+	// t := &route.Tree{Name: "root"}
+	// fn := func(path, name string) route.MyFn {
+	// 	ch := t.MakeChild(name)
+	// 	var spawnfn func(tr *route.Tree) route.MyFn
+	// 	spawnfn = func(tr *route.Tree) route.MyFn {
+	// 		return func(path, name string) route.MyFn {
+	// 			ch2 := tr.MakeChild(name)
+	// 			return spawnfn(ch2)
+	// 		}
+	// 	}
+	// 	return spawnfn(ch)
+	// }
+	// lc.Create(fn)
+	// t.Print()
+	// tr := route.NewTreeRoot(t)
+	bot.NewBot(creds.CrSch, nil)
+	// updsmap := sch.SpawnSchedulers(b.Jobs)
+	// b.Listen(updsmap)
 	//*/
-
 	//fbclient.CreateSchedule()
 }
