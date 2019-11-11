@@ -16,7 +16,7 @@ func NewTreeRoot(rootnode *Tree) *TreeRoot {
 }
 
 func buildHashMap(from *Tree, hashmap *map[string]string) *map[string]string {
-	(*hashmap)[from.CalcHash()] = from.MakePath()
+	(*hashmap)[from.CalcHash64()] = from.MakePath()
 	for _, child := range from.Children {
 		buildHashMap(child, hashmap)
 	}

@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/orsenkucher/schedulebot/bot"
 	"github.com/orsenkucher/schedulebot/creds"
-	"github.com/orsenkucher/schedulebot/root"
+	"github.com/orsenkucher/schedulebot/fbclient"
 	"github.com/orsenkucher/schedulebot/route"
 	"github.com/orsenkucher/schedulebot/sch"
 )
@@ -16,6 +16,7 @@ import (
 // [.] Generate schedule path from direcory it lies in
 // [+] Generate buttons by path like below
 //     Ukraine?.Mehmat.firstyear.math.group1.subgroup2
+// [.] Finish schmanager cmd
 //
 // *** Proposals ***
 // [.] Use hash to determine whether sch update is needed
@@ -26,8 +27,9 @@ func main() {
 	// fbclient.CreateSchFromJSON(root.SchFile)
 
 	// /*
-	var lc route.TreeCreator = route.LocalCreator{Root: root.Rootdir}
-	t := lc.Create()
+	fbclient.CreateSchFromOS()
+
+	t := route.BuildOSTree()
 	t.Print()
 	tr := route.NewTreeRoot(t)
 	b := bot.NewBot(creds.Cr459, tr)

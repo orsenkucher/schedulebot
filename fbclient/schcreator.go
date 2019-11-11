@@ -28,9 +28,24 @@ type Schedule struct {
 	Events []Event `json:"events"`
 }
 
-// CreateSchFromTree updates database with schedules from tree
-func CreateSchFromTree(root *SchTree) {
-
+// CreateSchFromOS updates database with schedules from tree
+func CreateSchFromOS() {
+	osschs := BuildOSSchedule()
+	for _, ossch := range osschs {
+		fmt.Println(ossch)
+	}
+	var fireSchs []cloudfunc.Schedule
+	for _, ossch := range osschs {
+		bytes, err := readJSON(ossch.OSPath)
+		if err != nil {
+			panic(err)
+		}
+		var sch Schedule
+		json.Unmarshal(bytes, &sch)
+		sch.Name = ossch.TrPath
+		fireSchs = append(fireSchs, makeFireSch(sch))
+	}
+	sendFireSchedules(fireSchs)
 }
 
 // CreateSchFromJSON is schedule creator v2, that read data from json
@@ -49,7 +64,10 @@ func CreateSchFromJSON(path string) {
 	}
 
 	fireSchs := makeFirestoreSchedules(schs)
-	json.Unmarshal(bytes, &schs)
+	sendFireSchedules(fireSchs)
+}
+
+func sendFireSchedules(fireSchs []cloudfunc.Schedule) {
 	for _, s := range fireSchs {
 		for i, e := range s.Type {
 			fmt.Println(e, s.Event[i])
@@ -76,43 +94,48 @@ func CreateSchFromJSON(path string) {
 func makeFirestoreSchedules(schs []Schedule) []cloudfunc.Schedule {
 	fireSchs := make([]cloudfunc.Schedule, 0, len(schs))
 	for _, sch := range schs {
-		schedule := cloudfunc.Schedule{
-			Name:   sch.Name,
-			Type:   make([]int, 0, len(sch.Events)),
-			Event:  make([]string, 0, len(sch.Events)),
-			Minute: make([]int, 0, len(sch.Events))}
-		for _, e := range sch.Events {
-			dayIdx, ok := DayIndex[e.Day]
-			if !ok {
-				panic("Invalid Day on " + e.Title)
-			}
-
-			timePair := strings.Split(e.Time, ":")
-			if len(timePair) != 2 {
-				panic("Invalid Time on " + e.Title)
-			}
-			hour, err := strconv.Atoi(timePair[0])
-			if err != nil {
-				panic("Invalid Hour on " + e.Title)
-			}
-			minute, err := strconv.Atoi(timePair[1])
-			if err != nil {
-				panic("Invalid Minute on " + e.Title)
-			}
-			spin := -1
-			if e.Spin == "up" {
-				spin = 0
-			}
-			if e.Spin == "down" {
-				spin = 1
-			}
-			schedule.Type = append(schedule.Type, spin)
-			schedule.Event = append(schedule.Event, e.Title)
-			schedule.Minute = append(schedule.Minute, (dayIdx*24*60+(hour-2)*60+minute+mpw)%mpw)
-		}
+		schedule := makeFireSch(sch)
 		fireSchs = append(fireSchs, schedule)
 	}
 	return fireSchs
+}
+
+func makeFireSch(sch Schedule) cloudfunc.Schedule {
+	schedule := cloudfunc.Schedule{
+		Name:   sch.Name,
+		Type:   make([]int, 0, len(sch.Events)),
+		Event:  make([]string, 0, len(sch.Events)),
+		Minute: make([]int, 0, len(sch.Events))}
+	for _, e := range sch.Events {
+		dayIdx, ok := DayIndex[e.Day]
+		if !ok {
+			panic("Invalid Day on " + e.Title)
+		}
+
+		timePair := strings.Split(e.Time, ":")
+		if len(timePair) != 2 {
+			panic("Invalid Time on " + e.Title)
+		}
+		hour, err := strconv.Atoi(timePair[0])
+		if err != nil {
+			panic("Invalid Hour on " + e.Title)
+		}
+		minute, err := strconv.Atoi(timePair[1])
+		if err != nil {
+			panic("Invalid Minute on " + e.Title)
+		}
+		spin := -1
+		if e.Spin == "up" {
+			spin = 0
+		}
+		if e.Spin == "down" {
+			spin = 1
+		}
+		schedule.Type = append(schedule.Type, spin)
+		schedule.Event = append(schedule.Event, e.Title)
+		schedule.Minute = append(schedule.Minute, (dayIdx*24*60+(hour-2)*60+minute+mpw)%mpw)
+	}
+	return schedule
 }
 
 func readJSON(path string) ([]byte, error) {

@@ -1,6 +1,11 @@
 // Package root represents root domain
 package root
 
+import (
+	"path/filepath"
+	"strings"
+)
+
 // Schedule represents domain specific schedule
 type Schedule struct {
 	Name    string
@@ -37,3 +42,8 @@ const Rootdir = "data"
 
 // SchFile path to file with old schedule
 const SchFile = "fbclient/sch.json"
+
+// PopExt removes file extension from file name
+func PopExt(name string) string {
+	return strings.TrimSuffix(name, filepath.Ext(name))
+}

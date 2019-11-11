@@ -9,6 +9,9 @@ import (
 	"github.com/orsenkucher/schedulebot/hash"
 )
 
+type ewf interface {
+}
+
 // Tree is a node (and a tree) of a tree data structure.
 // Used to navigate user to schedule he's interested in.
 type Tree struct {
@@ -32,8 +35,8 @@ func (t *Tree) MakePath() string {
 	return string(bytes)
 }
 
-// CalcHash calculates unique hash for current node path
-func (t *Tree) CalcHash() string {
+// CalcHash64 calculates unique hash for current node path
+func (t *Tree) CalcHash64() string {
 	return hash.EncodeAsBase64(t.MakePath())
 }
 
@@ -44,7 +47,8 @@ func (t *Tree) chain() []string {
 	return append(t.Parent.chain(), t.Name)
 }
 
-func (t *Tree) makeChild(name string) *Tree {
+// MakeChild creates child node with provided name
+func (t *Tree) MakeChild(name string) *Tree {
 	child := &Tree{
 		Parent: t,
 		Name:   name,
@@ -95,25 +99,4 @@ func (t *Tree) print(n int) {
 		fmt.Print("╰")
 		child.print(n + 1)
 	}
-}
-
-// Routes are possible routes
-var Routes = makeRoutes()
-
-func makeRoutes() *Tree {
-	t0 := &Tree{Name: "КНУ"}
-	t01 := t0.makeChild("Мехмат")
-	t02 := t0.makeChild("Фізфак")
-	fmt.Println(t02)
-	t011 := t01.makeChild("1 курс")
-	t012 := t01.makeChild("2 курс")
-	fmt.Println(t012)
-	t0111 := t011.makeChild("1 група")
-	fmt.Println(t0111)
-	t0111path := t0111.MakePath()
-	fmt.Println(t0111path)
-	found, _ := t0.Find(t0111path)
-	fmt.Println(found)
-	fmt.Println(found == t0111)
-	return t0
 }
