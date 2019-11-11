@@ -1,15 +1,5 @@
 package route
 
-// // PathMaker is able to make path to itself
-// type PathMaker interface {
-// 	MakePath() string
-// }
-
-// // Hash64Calculator can calc his Hash in Base64 representation
-// type Hash64Calculator interface {
-// 	CalcHash() string
-// }
-
 // TreeRoot is the root node of route.Tree
 type TreeRoot struct {
 	Rootnode *Tree

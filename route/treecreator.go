@@ -1,47 +1,20 @@
 package route
 
 import (
-	"io/ioutil"
-	"path/filepath"
-	"strings"
+	"github.com/orsenkucher/schedulebot/root"
 )
 
-// TreeCreator is capable of creating route tree
-// from filesystem or firestore structure or whatever
-type TreeCreator interface {
-	Create(MyFn)
+// BuildOSTree is used to build tree using OS File system
+func BuildOSTree() *Tree {
+	t := &Tree{Name: "root"}
+	w := root.OSWalker{Root: root.Rootdir}
+	w.Walk(bindToTree(t))
+	return t
 }
 
-// LocalCreator creates route tree from local file system
-type LocalCreator struct {
-	Root string
-}
-
-// type ChildMaker interface{
-
-// }
-
-// MyFn recursive fn
-type MyFn func(path, name string) MyFn
-
-// Create walks through files starting from lc.Root and builds route.Tree
-func (lc LocalCreator) Create(fn MyFn) {
-	lc.fillTree(fn, lc.Root)
-}
-
-func (lc LocalCreator) fillTree(fn MyFn, path string) {
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		panic(err)
-	}
-	for _, file := range files {
-		name := file.Name()
-		if !file.IsDir() {
-			name = strings.TrimSuffix(name, filepath.Ext(name))
-		}
-		fn := fn(path, name)
-		if file.IsDir() {
-			lc.fillTree(fn, filepath.Join(path, name))
-		}
+func bindToTree(tr *Tree) root.WalkFunc {
+	return func(path, name string) root.WalkFunc {
+		child := tr.MakeChild(name)
+		return bindToTree(child)
 	}
 }
