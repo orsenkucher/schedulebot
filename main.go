@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/orsenkucher/schedulebot/bot"
 	"github.com/orsenkucher/schedulebot/creds"
+	"github.com/orsenkucher/schedulebot/fbclient"
 	"github.com/orsenkucher/schedulebot/route"
 	"github.com/orsenkucher/schedulebot/sch"
 )
@@ -26,6 +27,8 @@ func main() {
 	// fbclient.CreateSchFromJSON(root.SchFile)
 
 	// /*
+	fbclient.CreateSchFromOS()
+
 	t := route.BuildOSTree()
 	t.Print()
 	tr := route.NewTreeRoot(t)

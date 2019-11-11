@@ -2,8 +2,8 @@ package root
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
-	"strings"
 )
 
 // OSWalker is used to walk through folders starting from OSWalker.Root,
@@ -14,7 +14,7 @@ type OSWalker struct {
 
 // WalkFunc is applied to every file on walkfn's level
 // WalkFunc emits new WalkFunc which would be applied to files one level deeper
-type WalkFunc func(path, name string) WalkFunc
+type WalkFunc func(path string, file os.FileInfo) WalkFunc
 
 // Walk walks through files invoking current level WalkFunc on every file on current depth level
 // New WalkFunc from Old WalkFunc is applied to sublevel children
@@ -29,13 +29,9 @@ func (w OSWalker) walk(walkfn WalkFunc, path string) {
 		panic(err)
 	}
 	for _, file := range files {
-		name := file.Name()
-		if !file.IsDir() {
-			name = strings.TrimSuffix(name, filepath.Ext(name))
-		}
-		fn := walkfn(path, name)
+		fn := walkfn(path, file)
 		if file.IsDir() {
-			w.walk(fn, filepath.Join(path, name))
+			w.walk(fn, filepath.Join(path, file.Name()))
 		}
 	}
 }

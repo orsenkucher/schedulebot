@@ -1,6 +1,8 @@
 package route
 
 import (
+	"os"
+
 	"github.com/orsenkucher/schedulebot/root"
 )
 
@@ -13,7 +15,11 @@ func BuildOSTree() *Tree {
 }
 
 func bindToTree(tr *Tree) root.WalkFunc {
-	return func(path, name string) root.WalkFunc {
+	return func(_ string, file os.FileInfo) root.WalkFunc {
+		name := file.Name()
+		if !file.IsDir() {
+			name = root.PopExt(name)
+		}
 		child := tr.MakeChild(name)
 		return bindToTree(child)
 	}

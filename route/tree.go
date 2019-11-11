@@ -100,24 +100,3 @@ func (t *Tree) print(n int) {
 		child.print(n + 1)
 	}
 }
-
-// Routes are possible routes
-var Routes = makeRoutes()
-
-func makeRoutes() *Tree {
-	t0 := &Tree{Name: "КНУ"}
-	t01 := t0.MakeChild("Мехмат")
-	t02 := t0.MakeChild("Фізфак")
-	fmt.Println(t02)
-	t011 := t01.MakeChild("1 курс")
-	t012 := t01.MakeChild("2 курс")
-	fmt.Println(t012)
-	t0111 := t011.MakeChild("1 група")
-	fmt.Println(t0111)
-	t0111path := t0111.MakePath()
-	fmt.Println(t0111path)
-	found, _ := t0.Find(t0111path)
-	fmt.Println(found)
-	fmt.Println(found == t0111)
-	return t0
-}
