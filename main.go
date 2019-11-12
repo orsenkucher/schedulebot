@@ -23,7 +23,7 @@ import (
 // [.] Custom schedules
 //
 func main() {
-	// fbclient.GenerateTestSchedule()
+	fbclient.GenerateTestSchedule()
 	// fbclient.CreateSchFromJSON(root.SchFile)
 
 	// /*

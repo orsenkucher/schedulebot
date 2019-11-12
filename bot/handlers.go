@@ -77,7 +77,6 @@ func (b *Bot) handleCallback(
 				schName := node.MakePath()
 				ch, ok := chans[schName]
 				if ok {
-					fmt.Println(data)
 					ch <- root.SubEvent{Action: root.Add, SubID: chatID}
 					fbclient.AddSubscriber(chatID, schName)
 					// snackMsg := "Our congrats 🥂. We handled your sub!"

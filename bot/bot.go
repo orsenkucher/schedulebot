@@ -20,6 +20,7 @@ type Bot struct {
 	api        *tgbotapi.BotAPI
 	Jobs       chan sch.Job
 	root       *route.TreeRoot
+	sentmap    map[int64]int // map[userID]msgID
 }
 
 // NewBot creates new scheduler bot with provided credentials
@@ -27,7 +28,8 @@ func NewBot(cr creds.Credential, root *route.TreeRoot) *Bot {
 	b := &Bot{
 		credential: cr,
 		Jobs:       make(chan sch.Job),
-		root:       root}
+		root:       root,
+		sentmap:    make(map[int64]int)}
 	b.initAPI()
 	go b.processJobs()
 	return b
@@ -86,15 +88,27 @@ func (b *Bot) Listen(updsmap map[string]chan root.SubEvent) {
 	}
 }
 
-// SpreadMessage is public
+// SpreadMessage is used to spread message to users
 func (b *Bot) SpreadMessage(users []int64, msg string) {
 	log.Printf("Sending message to %v users\n", len(users))
 	for _, u := range users {
 		time.Sleep(100 * time.Millisecond)
-		tgmsg := tgbotapi.NewMessage(u, msg)
+
+		log.Printf("Deleting previous msg for %v\n", u)
+		if lastsent, ok := b.sentmap[u]; ok {
+			delcfg := tgbotapi.NewDeleteMessage(u, lastsent)
+			if _, err := b.api.DeleteMessage(delcfg); err != nil {
+				log.Println(err)
+			}
+		}
+
 		log.Printf("Sending to %v\n", u)
-		if _, err := b.api.Send(tgmsg); err != nil {
+		tgmsg := tgbotapi.NewMessage(u, msg)
+		sent, err := b.api.Send(tgmsg)
+		if err != nil {
 			log.Println(err)
+		} else {
+			b.sentmap[u] = sent.MessageID
 		}
 	}
 }
