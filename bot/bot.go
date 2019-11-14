@@ -20,7 +20,8 @@ type Bot struct {
 	api        *tgbotapi.BotAPI
 	Jobs       chan sch.Job
 	root       *route.TreeRoot
-	sentmap    map[int64]int // map[userID]msgID
+	sentmap    map[int64]int             // map[userID]msgID
+	resetTree  map[int64]*route.TreeRoot // map[userID]ResetTree Root
 }
 
 // NewBot creates new scheduler bot with provided credentials
@@ -29,7 +30,8 @@ func NewBot(cr creds.Credential, root *route.TreeRoot) *Bot {
 		credential: cr,
 		Jobs:       make(chan sch.Job),
 		root:       root,
-		sentmap:    make(map[int64]int)}
+		sentmap:    make(map[int64]int),
+		resetTree:  make(map[int64]*route.TreeRoot)}
 	b.initAPI()
 	go b.processJobs()
 	return b

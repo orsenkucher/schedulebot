@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/orsenkucher/schedulebot/route"
+
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -39,18 +41,33 @@ func (b *Bot) onSub(update tgbotapi.Update) {
 	}
 	msg.ReplyMarkup = mkp
 	if _, err := b.api.Send(msg); err != nil {
-		log.Panic(err)
+		log.Println(err)
 	}
 }
 
 func (b *Bot) onReset(update tgbotapi.Update) {
-	// 	msg := tgbotapi.NewMessage(update.Message.Chat.ID,
-	// 		"Варианты отписки ("+update.Message.Chat.FirstName+")") // Unsub options ("+update.Message.Chat.FirstName+")"
-	// 	msg.ReplyMarkup = inlineResetKeyboard
-	// 	fmt.Println("Doing reset for user", update.Message.Chat.ID)
-	// 	if _, err := b.api.Send(msg); err != nil {
-	// 		log.Panic(err)
-	// 	}
+	chatID := update.Message.Chat.ID
+	urt := b.getResetTree(chatID)
+	// dropped := rt.Rootnode.Drop()
+	mkp, _ := GenForReset(urt.Rootnode)
+
+	msg := tgbotapi.NewMessage(chatID, urt.Rootnode.Drop().String()) //"Варианты отписки ("+update.Message.Chat.FirstName+")")
+	msg.ReplyMarkup = mkp
+	fmt.Println("Doing reset for user", chatID)
+	if _, err := b.api.Send(msg); err != nil {
+		log.Println(err)
+	}
+}
+
+func (b *Bot) getResetTree(userID int64) *route.TreeRoot {
+	_, ok := b.resetTree[userID]
+	if !ok {
+		// fbclient. Fetch here
+		subs := [][]string{}
+		b.resetTree[userID] = route.NewTreeRoot(route.GenerateUsersTree(subs))
+	}
+
+	return b.resetTree[userID]
 }
 
 func (b *Bot) handleCallback(
@@ -64,8 +81,8 @@ func (b *Bot) handleCallback(
 		fmt.Println(data)
 		nodehash := strings.Split(data, ":")[1]
 		if node, ok := b.root.Find(nodehash); ok {
-			msg := tgbotapi.NewEditMessageText(chatID, messageID, fmt.Sprintf("%s👇🏻", node))
 			if mkp, ok := GenFor(node); ok {
+				msg := tgbotapi.NewEditMessageText(chatID, messageID, fmt.Sprintf("%s👇🏻", node))
 				msg.ReplyMarkup = &mkp
 				if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
 					log.Panic(err)
@@ -94,21 +111,36 @@ func (b *Bot) handleCallback(
 				}
 			}
 		}
-		// case strings.Contains(data, "reset"):
-		// 	scheduleName := strings.Split(data, ":")[1]
-
-		// 	ch, ok := chans[scheduleName]
-		// 	if ok {
-		// 		fmt.Println(data)
-		// 		ch <- root.SubEvent{Action: root.Del, SubID: chatID}
-		// 		fbclient.DeleteSubscriber(chatID, scheduleName)
-		// 		// snackMsg := "Un️subscribed ♻️" // ☠️
-		// 		snackMsg := "Отписка проведена ♻️ (" + cmdMapping[data] + ")"
-		// 		b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
-		// 		msg := tgbotapi.NewMessage(chatID, snackMsg)
-		// 		if _, err := b.api.Send(msg); err != nil {
-		// 			log.Println(err)
-		// 		}
-		// 	}
+	case strings.Contains(data, "reset"):
+		nodehash := strings.Split(data, ":")[1]
+		urt := b.getResetTree(chatID)
+		if node, ok := urt.Find(nodehash); ok {
+			if mkp, ok := GenForReset(node); ok {
+				msg := tgbotapi.NewEditMessageText(chatID, messageID, node.Drop().String())
+				msg.ReplyMarkup = &mkp
+				if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
+					log.Panic(err)
+				}
+				if _, err := b.api.Send(msg); err != nil {
+					log.Panic(err)
+				}
+			} else {
+				scheduleName := node.MakePath()
+				ch, ok := chans[scheduleName]
+				if ok {
+					fmt.Println(data)
+					ch <- root.SubEvent{Action: root.Del, SubID: chatID}
+					fbclient.DeleteSubscriber(chatID, scheduleName)
+					// snackMsg := "Un️subscribed ♻️" // ☠️
+					// snackMsg := "Отписка проведена ♻️ (" + cmdMapping[data] + ")"
+					snackMsg := "Отписка проведена ♻️" + node.Name
+					b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
+					msg := tgbotapi.NewMessage(chatID, snackMsg)
+					if _, err := b.api.Send(msg); err != nil {
+						log.Println(err)
+					}
+				}
+			}
+		}
 	}
 }

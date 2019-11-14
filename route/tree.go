@@ -9,9 +9,6 @@ import (
 	"github.com/orsenkucher/schedulebot/hash"
 )
 
-type ewf interface {
-}
-
 // Tree is a node (and a tree) of a tree data structure.
 // Used to navigate user to schedule he's interested in.
 type Tree struct {
@@ -121,21 +118,12 @@ func (t *Tree) addNode(path []string) {
 	}
 }
 
-// Drop drop to fork
-func (t *Tree) Drop() *Tree{
+// Drop drops down to the nearest fork
+func (t *Tree) Drop() *Tree {
 	for t.Children != nil && len(t.Children) == 1 {
 		t = t.Children[0]
 	}
 	if t.Children == nil {
-		t = t.Parent
-	}
-	return t
-}
-
-// Jump drop to fork
-func (t *Tree) Jump() *Tree{
-	t = t.Parent
-	for t.Parent != nil && len(t.Children) == 1{
 		t = t.Parent
 	}
 	return t
