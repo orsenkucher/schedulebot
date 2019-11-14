@@ -100,3 +100,43 @@ func (t *Tree) print(n int) {
 		child.print(n + 1)
 	}
 }
+
+// GenerateUsersTree is pub
+func GenerateUsersTree(nodes [][]string) *Tree {
+	t := &Tree{Name: "Root"}
+	for _, node := range nodes {
+		t.addNode(node)
+	}
+	return t
+}
+
+func (t *Tree) addNode(path []string) {
+	for _, node := range path {
+		next, ok := t.Select(node)
+		if !ok {
+			t = t.MakeChild(node)
+		} else {
+			t = next
+		}
+	}
+}
+
+// Drop drop to fork
+func (t *Tree) Drop() *Tree{
+	for t.Children != nil && len(t.Children) == 1 {
+		t = t.Children[0]
+	}
+	if t.Children == nil {
+		t = t.Parent
+	}
+	return t
+}
+
+// Jump drop to fork
+func (t *Tree) Jump() *Tree{
+	t = t.Parent
+	for t.Parent != nil && len(t.Children) == 1{
+		t = t.Parent
+	}
+	return t
+}
