@@ -62,8 +62,11 @@ func (b *Bot) onReset(update tgbotapi.Update) {
 
 func (b *Bot) noSubsMessage(chatID int64) {
 	msg := tgbotapi.NewMessage(chatID, "Подписок нет 🙅🏿‍♂️")
-	if _, err := b.api.Send(msg); err != nil {
+	respmsg, err := b.api.Send(msg)
+	if err != nil {
 		log.Println(err)
+	} else {
+		b.sentresets[chatID] = respmsg.MessageID
 	}
 }
 
@@ -122,8 +125,11 @@ func (b *Bot) onResetCallback(bundle idBundle, chans map[string]chan root.SubEve
 						log.Println(err)
 					}
 				}
-				if _, err := b.api.Send(msg); err != nil {
+				respmsg, err := b.api.Send(msg)
+				if err != nil {
 					log.Println(err)
+				} else {
+					b.sentresets[bundle.chatID] = respmsg.MessageID
 				}
 			} else {
 				scheduleName := node.MakePath()
@@ -182,6 +188,13 @@ func (b *Bot) onRoute(bundle idBundle, chans map[string]chan root.SubEvent) {
 				msg := tgbotapi.NewMessage(bundle.chatID, snackMsg)
 				if _, err := b.api.Send(msg); err != nil {
 					log.Println(err)
+				}
+				if resetID, ok := b.sentresets[bundle.chatID]; ok {
+					rt, _ := b.getResetTree(bundle.chatID, true)
+					b.onResetCallback(idBundle{
+						data:      rt.Rootnode.CalcHash64(),
+						chatID:    bundle.chatID,
+						messageID: resetID}, chans)
 				}
 			} else {
 				snackMsg := "Этот шедуль уже не в базе"

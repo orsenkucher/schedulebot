@@ -22,6 +22,7 @@ type Bot struct {
 	root       *route.TreeRoot
 	sentmap    map[int64]int             // map[userID]msgID
 	resetTree  map[int64]*route.TreeRoot // map[userID]ResetTree Root
+	sentresets map[int64]int             // map[userID]msgID - with reset layout
 }
 
 // NewBot creates new scheduler bot with provided credentials
@@ -31,7 +32,8 @@ func NewBot(cr creds.Credential, root *route.TreeRoot) *Bot {
 		Jobs:       make(chan sch.Job),
 		root:       root,
 		sentmap:    make(map[int64]int),
-		resetTree:  make(map[int64]*route.TreeRoot)}
+		resetTree:  make(map[int64]*route.TreeRoot),
+		sentresets: make(map[int64]int)}
 	b.initAPI()
 	go b.processJobs()
 	return b
