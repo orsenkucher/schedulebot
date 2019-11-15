@@ -47,99 +47,141 @@ func (b *Bot) onSub(update tgbotapi.Update) {
 
 func (b *Bot) onReset(update tgbotapi.Update) {
 	chatID := update.Message.Chat.ID
-	urt := b.getResetTree(chatID)
-	// dropped := rt.Rootnode.Drop()
-	mkp, _ := GenForReset(urt.Rootnode)
-
-	msg := tgbotapi.NewMessage(chatID, urt.Rootnode.Drop().String()) //"Варианты отписки ("+update.Message.Chat.FirstName+")")
-	msg.ReplyMarkup = mkp
-	fmt.Println("Doing reset for user", chatID)
-	if _, err := b.api.Send(msg); err != nil {
-		log.Println(err)
+	if urt, ok := b.getResetTree(chatID, true); ok {
+		mkp, _ := GenForReset(urt.Rootnode)
+		msg := tgbotapi.NewMessage(chatID, urt.Rootnode.Drop().String()) //"Варианты отписки ("+update.Message.Chat.FirstName+")")
+		msg.ReplyMarkup = mkp
+		fmt.Println("Doing reset for user", chatID)
+		if _, err := b.api.Send(msg); err != nil {
+			log.Println(err)
+		}
+	} else {
+		msg := tgbotapi.NewMessage(chatID, "Подписок нет 🙅🏿‍♂️")
+		if _, err := b.api.Send(msg); err != nil {
+			log.Println(err)
+		}
 	}
 }
 
-func (b *Bot) getResetTree(userID int64) *route.TreeRoot {
+func (b *Bot) getResetTree(userID int64, forceUpd bool) (*route.TreeRoot, bool) {
 	_, ok := b.resetTree[userID]
-	if !ok {
-		// fbclient. Fetch here
-		subs := [][]string{}
-		b.resetTree[userID] = route.NewTreeRoot(route.GenerateUsersTree(subs))
+	if !ok || forceUpd {
+		subs := fbclient.FetchUsersSubs(userID)
+		var tr *route.TreeRoot
+		if len(subs) > 0 {
+			tr = route.NewTreeRoot(route.GenerateUsersTree(subs))
+		}
+		b.resetTree[userID] = tr
 	}
+	tr := b.resetTree[userID]
+	if tr == nil {
+		return nil, false
+	}
+	return tr, true
+}
 
-	return b.resetTree[userID]
+type idBundle struct {
+	data       string
+	chatID     int64
+	messageID  int
+	callbackID string
 }
 
 func (b *Bot) handleCallback(
 	update tgbotapi.Update,
 	chans map[string]chan root.SubEvent) {
 	data := update.CallbackQuery.Data
-	chatID := update.CallbackQuery.Message.Chat.ID
-	messageID := update.CallbackQuery.Message.MessageID
+	bundle := idBundle{
+		data:       strings.Split(data, ":")[1],
+		chatID:     update.CallbackQuery.Message.Chat.ID,
+		messageID:  update.CallbackQuery.Message.MessageID,
+		callbackID: update.CallbackQuery.ID,
+	}
+	fmt.Println(data)
 	switch {
 	case strings.Contains(data, "route"):
-		fmt.Println(data)
-		nodehash := strings.Split(data, ":")[1]
-		if node, ok := b.root.Find(nodehash); ok {
-			if mkp, ok := GenFor(node); ok {
-				msg := tgbotapi.NewEditMessageText(chatID, messageID, fmt.Sprintf("%s👇🏻", node))
-				msg.ReplyMarkup = &mkp
-				if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
-					log.Panic(err)
-				}
-				if _, err := b.api.Send(msg); err != nil {
-					log.Panic(err)
-				}
-			} else {
-				schName := node.MakePath()
-				ch, ok := chans[schName]
-				if ok {
-					ch <- root.SubEvent{Action: root.Add, SubID: chatID}
-					fbclient.AddSubscriber(chatID, schName)
-					// snackMsg := "Our congrats 🥂. We handled your sub!"
-					// snackMsg := "Ваша регистрация обработана 🥂 (" + cmdMapping[data] + ")"
-					snackMsg := "Поздравляю! Ты подписался на \"" + node.Name + "\". Увидимся на паре 🥂"
-					b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
-					msg := tgbotapi.NewMessage(chatID, snackMsg)
-					if _, err := b.api.Send(msg); err != nil {
-						log.Println(err)
-					}
-				} else {
-					snackMsg := "Этот шедуль уже не в базе"
-					b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
-					log.Printf("Schedule was not found by name: %s\n", schName)
-				}
-			}
-		}
+		b.onRoute(bundle, chans)
 	case strings.Contains(data, "reset"):
-		nodehash := strings.Split(data, ":")[1]
-		urt := b.getResetTree(chatID)
+		b.onResetCallback(bundle, chans)
+	}
+}
+
+func (b *Bot) onResetCallback(bundle idBundle, chans map[string]chan root.SubEvent) {
+	nodehash := bundle.data
+	if urt, ok := b.getResetTree(bundle.chatID, false); ok {
 		if node, ok := urt.Find(nodehash); ok {
 			if mkp, ok := GenForReset(node); ok {
-				msg := tgbotapi.NewEditMessageText(chatID, messageID, node.Drop().String())
+				msg := tgbotapi.NewEditMessageText(bundle.chatID, bundle.messageID, node.Drop().String())
 				msg.ReplyMarkup = &mkp
-				if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "")); err != nil {
-					log.Panic(err)
+				if bundle.callbackID != "" {
+					if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(bundle.callbackID, "")); err != nil {
+						log.Println(err)
+					}
 				}
 				if _, err := b.api.Send(msg); err != nil {
-					log.Panic(err)
+					log.Println(err)
 				}
 			} else {
 				scheduleName := node.MakePath()
 				ch, ok := chans[scheduleName]
 				if ok {
-					fmt.Println(data)
-					ch <- root.SubEvent{Action: root.Del, SubID: chatID}
-					fbclient.DeleteSubscriber(chatID, scheduleName)
+					fmt.Println(bundle.data)
+					ch <- root.SubEvent{Action: root.Del, SubID: bundle.chatID}
+					fbclient.DeleteSubscriber(bundle.chatID, scheduleName)
 					// snackMsg := "Un️subscribed ♻️" // ☠️
 					// snackMsg := "Отписка проведена ♻️ (" + cmdMapping[data] + ")"
 					snackMsg := "Отписка проведена ♻️" + node.Name
-					b.api.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, snackMsg))
-					msg := tgbotapi.NewMessage(chatID, snackMsg)
+					b.api.AnswerCallbackQuery(tgbotapi.NewCallback(bundle.callbackID, snackMsg))
+					msg := tgbotapi.NewMessage(bundle.chatID, snackMsg)
 					if _, err := b.api.Send(msg); err != nil {
 						log.Println(err)
 					}
+					b.getResetTree(bundle.chatID, true)
+					b.onResetCallback(idBundle{
+						data:      node.Parent.CalcHash64(),
+						chatID:    bundle.chatID,
+						messageID: bundle.messageID}, chans)
 				}
+			}
+		}
+	} else {
+		msg := tgbotapi.NewEditMessageText(bundle.chatID, bundle.messageID, "Подписок нет 🙅🏿‍♂️")
+		if _, err := b.api.Send(msg); err != nil {
+			log.Println(err)
+		}
+	}
+}
+
+func (b *Bot) onRoute(bundle idBundle, chans map[string]chan root.SubEvent) {
+	nodehash := bundle.data
+	if node, ok := b.root.Find(nodehash); ok {
+		if mkp, ok := GenFor(node); ok {
+			msg := tgbotapi.NewEditMessageText(bundle.chatID, bundle.messageID, fmt.Sprintf("%s👇🏻", node))
+			msg.ReplyMarkup = &mkp
+			if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(bundle.callbackID, "")); err != nil {
+				log.Panic(err)
+			}
+			if _, err := b.api.Send(msg); err != nil {
+				log.Panic(err)
+			}
+		} else {
+			schName := node.MakePath()
+			ch, ok := chans[schName]
+			if ok {
+				ch <- root.SubEvent{Action: root.Add, SubID: bundle.chatID}
+				fbclient.AddSubscriber(bundle.chatID, schName)
+				// snackMsg := "Our congrats 🥂. We handled your sub!"
+				// snackMsg := "Ваша регистрация обработана 🥂 (" + cmdMapping[data] + ")"
+				snackMsg := "Поздравляю! Ты подписался на \"" + node.Name + "\". Увидимся на паре 🥂"
+				b.api.AnswerCallbackQuery(tgbotapi.NewCallback(bundle.callbackID, snackMsg))
+				msg := tgbotapi.NewMessage(bundle.chatID, snackMsg)
+				if _, err := b.api.Send(msg); err != nil {
+					log.Println(err)
+				}
+			} else {
+				snackMsg := "Этот шедуль уже не в базе"
+				b.api.AnswerCallbackQuery(tgbotapi.NewCallback(bundle.callbackID, snackMsg))
+				log.Printf("Schedule was not found by name: %s\n", schName)
 			}
 		}
 	}

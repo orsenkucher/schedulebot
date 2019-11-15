@@ -5,12 +5,14 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 //link :="https://us-central1-scheduleuabot.cloudfunctions.net/FetchUsersSubs"
 
 //FetchUsersSubs is public
-func FetchUsersSubs(ID string) [][]string {
+func FetchUsersSubs(userID int64) [][]string {
+	ID := strconv.FormatInt(userID, 10)
 	resp, err := http.Post("https://us-central1-scheduleuabot.cloudfunctions.net/FetchUsersSubs", "text/plain", bytes.NewBuffer([]byte(ID)))
 	if err != nil {
 		log.Fatalln(err)

@@ -25,7 +25,7 @@ import (
 // [.] Custom schedules
 //
 func main() {
-	fmt.Println(fbclient.FetchUsersSubs("364448153"))
+	fmt.Println(fbclient.FetchUsersSubs(364448153))
 	fbclient.GenerateTestSchedule()
 	// fbclient.CreateSchFromJSON(root.SchFile)
 

@@ -128,3 +128,14 @@ func (t *Tree) Drop() *Tree {
 	}
 	return t
 }
+
+// Jump drop to fork
+func (t *Tree) Jump() *Tree {
+	if t := t.Parent; t != nil {
+		for t.Parent != nil && len(t.Children) == 1 {
+			t = t.Parent
+		}
+		return t
+	}
+	return t
+}

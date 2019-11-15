@@ -31,16 +31,18 @@ func GenForReset(route *route.Tree) (tgbotapi.InlineKeyboardMarkup, bool) {
 	if route.Children == nil {
 		return tgbotapi.InlineKeyboardMarkup{}, false
 	}
-	buttons := make([]tgbotapi.InlineKeyboardButton, len(route.Children))
-	for i, ch := range route.Drop().Children {
+	dropped := route.Drop()
+	buttons := make([]tgbotapi.InlineKeyboardButton, len(dropped.Children))
+	for i, ch := range dropped.Children {
 		icon := "📂"
 		if ch.Children == nil {
 			icon = "♻️"
 		}
 		buttons[i] = tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf(" %s %s  ", icon, ch.Name), "reset:"+ch.CalcHash64())
 	}
-	if route.Parent != nil {
-		buttons = append([]tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(" 🔙 Back  ", "reset:"+route.Parent.CalcHash64())}, buttons...)
+	jumped := route.Jump()
+	if jumped.Parent != nil { // check if jumped is root
+		buttons = append([]tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(" 🔙 Back  ", "reset:"+jumped.Parent.CalcHash64())}, buttons...)
 	}
 	return tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(buttons...)), true
 }
