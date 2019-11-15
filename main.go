@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/orsenkucher/schedulebot/bot"
 	"github.com/orsenkucher/schedulebot/creds"
 	"github.com/orsenkucher/schedulebot/fbclient"
@@ -23,6 +25,7 @@ import (
 // [.] Custom schedules
 //
 func main() {
+	fmt.Println(fbclient.FetchUsersSubs("364448153"))
 	fbclient.GenerateTestSchedule()
 	// fbclient.CreateSchFromJSON(root.SchFile)
 
