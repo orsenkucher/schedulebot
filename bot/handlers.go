@@ -56,10 +56,14 @@ func (b *Bot) onReset(update tgbotapi.Update) {
 			log.Println(err)
 		}
 	} else {
-		msg := tgbotapi.NewMessage(chatID, "Подписок нет 🙅🏿‍♂️")
-		if _, err := b.api.Send(msg); err != nil {
-			log.Println(err)
-		}
+		b.noSubsMessage(chatID)
+	}
+}
+
+func (b *Bot) noSubsMessage(chatID int64) {
+	msg := tgbotapi.NewMessage(chatID, "Подписок нет 🙅🏿‍♂️")
+	if _, err := b.api.Send(msg); err != nil {
+		log.Println(err)
 	}
 }
 
@@ -145,10 +149,11 @@ func (b *Bot) onResetCallback(bundle idBundle, chans map[string]chan root.SubEve
 			}
 		}
 	} else {
-		msg := tgbotapi.NewEditMessageText(bundle.chatID, bundle.messageID, "Подписок нет 🙅🏿‍♂️")
-		if _, err := b.api.Send(msg); err != nil {
+		delcfg := tgbotapi.NewDeleteMessage(bundle.chatID, bundle.messageID)
+		if _, err := b.api.DeleteMessage(delcfg); err != nil {
 			log.Println(err)
 		}
+		b.noSubsMessage(bundle.chatID)
 	}
 }
 
