@@ -34,8 +34,9 @@ func (b *Bot) handleMessage(update tgbotapi.Update) {
 
 func (b *Bot) onSub(update tgbotapi.Update) {
 	chatID := update.Message.Chat.ID
-	msg := tgbotapi.NewMessage(chatID, "Выбери свое расписание👇🏻") // ⬇️ 🎓 👇🏻
-	mkp, ok := GenFor(b.root.Rootnode.Drop())
+	dropped := b.root.Rootnode.Drop()
+	msg := tgbotapi.NewMessage(chatID, "Выбери свое расписание👇🏻\n"+dropped.String()) // ⬇️ 🎓 👇🏻
+	mkp, ok := GenFor(dropped)
 	if !ok {
 		log.Panic("Here must be ok!")
 	}
@@ -148,7 +149,7 @@ func (b *Bot) onResetCallback(bundle idBundle, chans map[string]chan root.SubEve
 					}
 					b.getResetTree(bundle.chatID, true)
 					b.onResetCallback(idBundle{
-						data:      node.Parent.CalcHash64(),
+						data:      node.Jump().CalcHash64(),
 						chatID:    bundle.chatID,
 						messageID: bundle.messageID}, chans)
 				}
@@ -166,14 +167,15 @@ func (b *Bot) onResetCallback(bundle idBundle, chans map[string]chan root.SubEve
 func (b *Bot) onRoute(bundle idBundle, chans map[string]chan root.SubEvent) {
 	nodehash := bundle.data
 	if node, ok := b.root.Find(nodehash); ok {
+		node = node.Drop()
 		if mkp, ok := GenFor(node); ok {
 			msg := tgbotapi.NewEditMessageText(bundle.chatID, bundle.messageID, fmt.Sprintf("%s👇🏻", node))
 			msg.ReplyMarkup = &mkp
 			if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(bundle.callbackID, "")); err != nil {
-				log.Panic(err)
+				log.Println(err)
 			}
 			if _, err := b.api.Send(msg); err != nil {
-				log.Panic(err)
+				log.Println(err)
 			}
 		} else {
 			schName := node.MakePath()

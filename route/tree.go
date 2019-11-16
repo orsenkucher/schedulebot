@@ -120,6 +120,9 @@ func (t *Tree) addNode(path []string) {
 
 // Drop drops down to the nearest fork
 func (t *Tree) Drop() *Tree {
+	if t.Children == nil {
+		return t
+	}
 	for t.Children != nil && len(t.Children) == 1 {
 		t = t.Children[0]
 	}

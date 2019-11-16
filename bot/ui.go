@@ -20,6 +20,7 @@ func GenFor(route *route.Tree) (tgbotapi.InlineKeyboardMarkup, bool) {
 		}
 		buttons[i] = tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf(" %s %s  ", icon, ch.Name), "route:"+ch.CalcHash64())
 	}
+	route = route.Jump()
 	if route.Parent != nil {
 		buttons = append([]tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(" 🔙 Back  ", "route:"+route.Parent.CalcHash64())}, buttons...)
 	}
