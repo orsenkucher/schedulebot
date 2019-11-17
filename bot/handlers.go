@@ -50,7 +50,7 @@ func (b *Bot) onReset(update tgbotapi.Update) {
 	chatID := update.Message.Chat.ID
 	if urt, ok := b.getResetTree(chatID, true); ok {
 		mkp, _ := GenForReset(urt.Rootnode)
-		msg := tgbotapi.NewMessage(chatID, urt.Rootnode.Drop().String()) //"Варианты отписки ("+update.Message.Chat.FirstName+")")
+		msg := tgbotapi.NewMessage(chatID, fmt.Sprintf("☠️🔥 %s", urt.Rootnode.Drop()))
 		msg.ReplyMarkup = mkp
 		fmt.Println("Doing reset for user", chatID)
 		if _, err := b.api.Send(msg); err != nil {
@@ -119,7 +119,7 @@ func (b *Bot) onResetCallback(bundle idBundle, chans map[string]chan root.SubEve
 	if urt, ok := b.getResetTree(bundle.chatID, false); ok {
 		if node, ok := urt.Find(nodehash); ok {
 			if mkp, ok := GenForReset(node); ok {
-				msg := tgbotapi.NewEditMessageText(bundle.chatID, bundle.messageID, node.Drop().String())
+				msg := tgbotapi.NewEditMessageText(bundle.chatID, bundle.messageID, fmt.Sprintf("☠️🔥 %s", node.Drop()))
 				msg.ReplyMarkup = &mkp
 				if bundle.callbackID != "" {
 					if _, err := b.api.AnswerCallbackQuery(tgbotapi.NewCallback(bundle.callbackID, "")); err != nil {
@@ -185,7 +185,7 @@ func (b *Bot) onRoute(bundle idBundle, chans map[string]chan root.SubEvent) {
 				fbclient.AddSubscriber(bundle.chatID, schName)
 				// snackMsg := "Our congrats 🥂. We handled your sub!"
 				// snackMsg := "Ваша регистрация обработана 🥂 (" + cmdMapping[data] + ")"
-				snackMsg := "Поздравляю! Ты подписался на \"" + node.Name + "\". Увидимся на паре 🥂"
+				snackMsg := "Сongrats🥂. Подписочка \"" + node.Name + "\" да."
 				b.api.AnswerCallbackQuery(tgbotapi.NewCallback(bundle.callbackID, snackMsg))
 				msg := tgbotapi.NewMessage(bundle.chatID, snackMsg)
 				if _, err := b.api.Send(msg); err != nil {
