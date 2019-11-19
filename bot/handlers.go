@@ -185,7 +185,7 @@ func (b *Bot) onRoute(bundle idBundle, chans map[string]chan root.SubEvent) {
 				fbclient.AddSubscriber(bundle.chatID, schName)
 				// snackMsg := "Our congrats 🥂. We handled your sub!"
 				// snackMsg := "Ваша регистрация обработана 🥂 (" + cmdMapping[data] + ")"
-				snackMsg := "Сongrats🥂. Подписочка \"" + node.Name + "\" да."
+				snackMsg := "Поздравляю🥂. Подписочка \"" + node.Name + "\" подписана."
 				b.api.AnswerCallbackQuery(tgbotapi.NewCallback(bundle.callbackID, snackMsg))
 				msg := tgbotapi.NewMessage(bundle.chatID, snackMsg)
 				if _, err := b.api.Send(msg); err != nil {
