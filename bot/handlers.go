@@ -141,7 +141,8 @@ func (b *Bot) onResetCallback(bundle idBundle, chans map[string]chan root.SubEve
 					fbclient.DeleteSubscriber(bundle.chatID, scheduleName)
 					// snackMsg := "Un️subscribed ♻️" // ☠️
 					// snackMsg := "Отписка проведена ♻️ (" + cmdMapping[data] + ")"
-					snackMsg := "Отписка проведена ♻️" + node.Name
+					// snackMsg := "Отписка проведена ♻️" + node.Name
+					snackMsg := "📆 " + node.Name + " - отписка проведена♻️"
 					b.api.AnswerCallbackQuery(tgbotapi.NewCallback(bundle.callbackID, snackMsg))
 					msg := tgbotapi.NewMessage(bundle.chatID, snackMsg)
 					if _, err := b.api.Send(msg); err != nil {
@@ -185,7 +186,9 @@ func (b *Bot) onRoute(bundle idBundle, chans map[string]chan root.SubEvent) {
 				fbclient.AddSubscriber(bundle.chatID, schName)
 				// snackMsg := "Our congrats 🥂. We handled your sub!"
 				// snackMsg := "Ваша регистрация обработана 🥂 (" + cmdMapping[data] + ")"
-				snackMsg := "Поздравляю🥂. Подписочка \"" + node.Name + "\" подписана."
+				// snackMsg := "Поздравляю🥂. Подписочка \"" + node.Name + "\" подписана."
+				// snackMsg := "Еба захендил🥂 " + node.Name + " +1"
+				snackMsg := "📆 " + node.Name + " - подписка подписана🥂"
 				b.api.AnswerCallbackQuery(tgbotapi.NewCallback(bundle.callbackID, snackMsg))
 				msg := tgbotapi.NewMessage(bundle.chatID, snackMsg)
 				if _, err := b.api.Send(msg); err != nil {
