@@ -24,7 +24,11 @@ func GenFor(route *route.Tree) (tgbotapi.InlineKeyboardMarkup, bool) {
 	if route.Parent != nil {
 		buttons = append([]tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(" 🔙 Back  ", "route:"+route.CalcHash64())}, buttons...)
 	}
-	return tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(buttons...)), true
+	var rows [][]tgbotapi.InlineKeyboardButton
+	for _, b := range buttons {
+		rows = append(rows, []tgbotapi.InlineKeyboardButton{b})
+	}
+	return tgbotapi.NewInlineKeyboardMarkup(rows...), true
 }
 
 // GenForReset generates keyboard for provided reset tree
@@ -45,5 +49,9 @@ func GenForReset(route *route.Tree) (tgbotapi.InlineKeyboardMarkup, bool) {
 	if jumped.Parent != nil { // check if jumped is root
 		buttons = append([]tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData(" 🔙 Back  ", "reset:"+jumped.Parent.CalcHash64())}, buttons...)
 	}
-	return tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(buttons...)), true
+	var rows [][]tgbotapi.InlineKeyboardButton
+	for _, b := range buttons {
+		rows = append(rows, []tgbotapi.InlineKeyboardButton{b})
+	}
+	return tgbotapi.NewInlineKeyboardMarkup(rows...), true
 }
