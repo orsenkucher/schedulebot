@@ -188,7 +188,8 @@ func (b *Bot) onRoute(bundle idBundle, chans map[string]chan root.SubEvent) {
 				// snackMsg := "Ваша регистрация обработана 🥂 (" + cmdMapping[data] + ")"
 				// snackMsg := "Поздравляю🥂. Подписочка \"" + node.Name + "\" подписана."
 				// snackMsg := "Еба захендил🥂 " + node.Name + " +1"
-				snackMsg := "📆 " + node.Name + " - подписка подписана🥂"
+				// snackMsg := "📆 " + node.Name + " - подписка подписана🥂"
+				snackMsg := "📆 " + node.Name + " - поздравляем, вы подписались🥂"
 				b.api.AnswerCallbackQuery(tgbotapi.NewCallback(bundle.callbackID, snackMsg))
 				msg := tgbotapi.NewMessage(bundle.chatID, snackMsg)
 				if _, err := b.api.Send(msg); err != nil {
