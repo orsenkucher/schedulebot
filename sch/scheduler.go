@@ -69,12 +69,21 @@ func (s *Scheduler) activateSchedule() {
 		delay, idx := calcNextSchedule(s.sch)
 		fmt.Println(s.getSubIDs())
 		fmt.Println("sleep for:", delay.Minutes())
+		// if delay < 3*time.Hour {
+		// 	ids := s.getSubIDs()
+		// 	s.jobs <- Job{Subs: ids, Event: s.sch.Event[idx]}
+		// }
 		time.Sleep(delay)
 
 		ids := s.getSubIDs()
 		fmt.Println(ids)
+		delay2, idx2 := calcNextSchedule(s.sch)
 		// s.bot.SpreadMessage(ids, s.sch.Event[ind])
-		s.jobs <- Job{Subs: ids, Event: s.sch.Event[idx]}
+		msg := s.sch.Event[idx]
+		if delay2 < 3*time.Hour {
+			msg += "\n Следующая пара: " + s.sch.Event[idx2]
+		}
+		s.jobs <- Job{Subs: ids, Event: msg}
 		fmt.Println("Success")
 	}
 }
@@ -88,7 +97,7 @@ func calcNextSchedule(s cloudfunc.Schedule) (time.Duration, int) {
 	thisWeek %= 2
 
 	for i := 0; i < len(s.Event); i++ {
-		curmins := (s.Minute[i] - 5 - mins + mpw) % mpw
+		curmins := (s.Minute[i] - 15 - mins + mpw) % mpw
 		if s.Type[i] == (thisWeek+1)%2 {
 			curmins += mpw
 		}

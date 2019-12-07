@@ -78,7 +78,7 @@ func GenerateTestSchedule() {
 	schedule := cloudfunc.Schedule{
 		Name:   "test",
 		Event:  []string{"We started", "Still alive", "Unbelivable", "5 минут, полёт нормальный", "I`ll send you one more in one min if everything is good"},
-		Minute: []int{mins + 6, mins + 7, mins + 8, mins + 9, mins + 10},
+		Minute: []int{mins + 16, mins + 17, mins + 18, mins + 19, mins + 20},
 		Type:   []int{-1, -1, -1, -1, -1},
 	}
 	SendSchedule(&schedule)
