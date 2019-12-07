@@ -7,4 +7,5 @@ require (
 	github.com/orsenkucher/schedulebot/cloudfunc v0.0.0-20191116205308-55e2cda55c1c
 	github.com/orsenkucher/schedulebot/fbclient v0.0.0-20191116205308-55e2cda55c1c
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
+	gitlab.com/toby3d/telegraph v1.1.0
 )
