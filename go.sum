@@ -67,10 +67,10 @@ github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJ
 github.com/modern-go/reflect2 v1.0.1 h1:9f412s+6RmYXLWZSEzVVgPGK7C2PphHj5RJrvfx9AWI=
 github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
 github.com/orsenkucher/schedulebot/cloudfunc v0.0.0-20191111185019-ae295e0683ac/go.mod h1:N3RqNn97bZ+zlHWZgMXOE6WX6P66ionZLZmYs9Pa/LI=
-github.com/orsenkucher/schedulebot/cloudfunc v0.0.0-20191116205308-55e2cda55c1c h1:cFqRUgHDeq8QPKkKeoyxi6DKGtJyIY6f60FaFdcMan8=
-github.com/orsenkucher/schedulebot/cloudfunc v0.0.0-20191116205308-55e2cda55c1c/go.mod h1:N3RqNn97bZ+zlHWZgMXOE6WX6P66ionZLZmYs9Pa/LI=
-github.com/orsenkucher/schedulebot/fbclient v0.0.0-20191116205308-55e2cda55c1c h1:3ov9C6E8chF2okfMUvn46IKLuBqoMCSrtRYpHjmOBTM=
-github.com/orsenkucher/schedulebot/fbclient v0.0.0-20191116205308-55e2cda55c1c/go.mod h1:PXCS3EXrPrQx0wBJgaQisrd9NZ9P0ymA/FOdUV8Uo44=
+github.com/orsenkucher/schedulebot/cloudfunc v0.0.0-20191207114735-8f643d7c7425 h1:iodB/IHUYaLJ4SXNKlzxA5HzGQE2hthgD+9IPOQ3Wvs=
+github.com/orsenkucher/schedulebot/cloudfunc v0.0.0-20191207114735-8f643d7c7425/go.mod h1:N3RqNn97bZ+zlHWZgMXOE6WX6P66ionZLZmYs9Pa/LI=
+github.com/orsenkucher/schedulebot/fbclient v0.0.0-20191207114735-8f643d7c7425 h1:BDPlG1lFFLAhYgeD+YEHoMCN2VQ7b3LdLwHM3bP0IyM=
+github.com/orsenkucher/schedulebot/fbclient v0.0.0-20191207114735-8f643d7c7425/go.mod h1:PXCS3EXrPrQx0wBJgaQisrd9NZ9P0ymA/FOdUV8Uo44=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
@@ -120,7 +120,6 @@ golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3/go.mod h1:t9HGtf8HONx5eT2rtn
 golang.org/x/net v0.0.0-20190501004415-9ce7a6920f09/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=
 golang.org/x/net v0.0.0-20190503192946-f4e77d36d62c/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=
 golang.org/x/net v0.0.0-20190603091049-60506f45cf65/go.mod h1:HSz+uSET+XFnRR8LxR5pz3Of3rY3CfYBVs4xY44aLks=
-golang.org/x/net v0.0.0-20190620200207-3b0461eec859 h1:R/3boaszxrf1GEUWTVDzSKVwLmSJpwZ1yqXm8j0v2QI=
 golang.org/x/net v0.0.0-20190620200207-3b0461eec859/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
 golang.org/x/net v0.0.0-20190724013045-ca1201d0de80 h1:Ao/3l156eZf2AW5wK8a7/smtodRU+gha3+BeqJ69lRk=
 golang.org/x/net v0.0.0-20190724013045-ca1201d0de80/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
