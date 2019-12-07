@@ -81,7 +81,7 @@ func (s *Scheduler) activateSchedule() {
 		// s.bot.SpreadMessage(ids, s.sch.Event[ind])
 		msg := s.sch.Event[idx]
 		if delay2 < 3*time.Hour {
-			msg += "\n Следующая пара: " + s.sch.Event[idx2]
+			msg += "\n\n" + s.sch.Event[idx2]
 		}
 		s.jobs <- Job{Subs: ids, Event: msg}
 		fmt.Println("Success")
