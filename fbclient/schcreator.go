@@ -114,14 +114,20 @@ func makeFireSch(sch Schedule) cloudfunc.Schedule {
 
 		timePair := strings.Split(e.Time, ":")
 		if len(timePair) != 2 {
+			fmt.Print("Here was panic")
+			continue
 			panic("Invalid Time on " + e.Title)
 		}
 		hour, err := strconv.Atoi(timePair[0])
 		if err != nil {
+			fmt.Print("Here was panic")
+			continue
 			panic("Invalid Hour on " + e.Title)
 		}
 		minute, err := strconv.Atoi(timePair[1])
 		if err != nil {
+			fmt.Print("Here was panic")
+			continue
 			panic("Invalid Minute on " + e.Title)
 		}
 		spin := -1
