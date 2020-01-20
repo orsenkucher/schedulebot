@@ -131,8 +131,9 @@ func makeFireSch(sch Schedule) cloudfunc.Schedule {
 		if e.Spin == "down" {
 			spin = 1
 		}
+
 		schedule.Type = append(schedule.Type, spin)
-		schedule.Event = append(schedule.Event, e.Title)
+		schedule.Event = append(schedule.Event, e.Time+" "+e.Title)
 		schedule.Minute = append(schedule.Minute, (dayIdx*24*60+(hour-2)*60+minute+mpw)%mpw)
 	}
 	return schedule

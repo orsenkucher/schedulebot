@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/orsenkucher/schedulebot/bot"
+	"github.com/orsenkucher/schedulebot/cloudfunc"
 	"github.com/orsenkucher/schedulebot/creds"
 	"github.com/orsenkucher/schedulebot/fbclient"
 	"github.com/orsenkucher/schedulebot/route"
@@ -23,7 +27,9 @@ import (
 // [.] Custom schedules
 //
 func main() {
-	// fbclient.GenerateTestSchedule()
+	fmt.Println(cloudfunc.GetMinsOfWeek(time.Now().UTC()))
+
+	fbclient.GenerateTestSchedule()
 	// fbclient.CreateSchFromJSON(root.SchFile)
 
 	// /*
@@ -35,7 +41,7 @@ func main() {
 	b := bot.NewBot(creds.Cr459, tr)
 	updsmap := sch.SpawnSchedulers(b.Jobs)
 	b.Listen(updsmap)
-	//*/
+	// */
 
-	//fbclient.CreateSchedule()
+	fbclient.CreateSchedule()
 }
