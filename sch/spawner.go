@@ -9,7 +9,7 @@ import (
 )
 
 // SpawnSchedulers spawns and activates all schedulers
-func SpawnSchedulers(jobs chan Job) map[string]chan root.SubEvent {
+func SpawnSchedulers(jobs chan Job) (map[string]chan root.SubEvent, []cloudfunc.Schedule) {
 	table := fbclient.FetchSchedules()
 	subscribers := fbclient.FetchSubscribers()
 	chMap := make(map[string]chan root.SubEvent)
@@ -18,7 +18,7 @@ func SpawnSchedulers(jobs chan Job) map[string]chan root.SubEvent {
 		ch := newScheduler(jobs, sch, ss)
 		chMap[sch.Name] = ch
 	}
-	return chMap
+	return chMap, table
 }
 
 func parseSubscribers(subs []cloudfunc.Subscriber) map[int64]void {

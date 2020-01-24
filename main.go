@@ -26,6 +26,13 @@ import (
 // [.] Use hash to determine whether sch update is needed
 // [.] Custom schedules
 //
+// *** v2.0 ***
+// [.] /start message
+// [.] day/week events with "remove" button
+// [.] on sub edit start msg
+// [.] on sub unsub from previous sub
+// [.] cmds: [sub unsub week day]
+// [.] возможность для правки страростами /edit cmd
 func main() {
 	fmt.Println(cloudfunc.GetMinsOfWeek(time.Now().UTC()))
 
@@ -38,8 +45,8 @@ func main() {
 	t := route.BuildOSTree()
 	t.Print()
 	tr := route.NewTreeRoot(t)
-	b := bot.NewBot(creds.Cr459, tr)
-	updsmap := sch.SpawnSchedulers(b.Jobs)
+	updsmap, table := sch.SpawnSchedulers(b.Jobs)
+	b := bot.NewBot(creds.Cr459, tr, table)
 	b.Listen(updsmap)
 	// */
 

@@ -8,6 +8,7 @@ import (
 
 	"github.com/orsenkucher/schedulebot/sch"
 
+	"github.com/orsenkucher/schedulebot/cloudfunc"
 	"github.com/orsenkucher/schedulebot/creds"
 	"github.com/orsenkucher/schedulebot/root"
 
@@ -23,15 +24,17 @@ type Bot struct {
 	sentmap    map[int64]int             // map[userID]msgID
 	resetTree  map[int64]*route.TreeRoot // map[userID]ResetTree Root
 	sentresets map[int64]int             // map[userID]msgID - with reset layout
+	table      []cloudfunc.Schedule
 }
 
 // NewBot creates new scheduler bot with provided credentials
-func NewBot(cr creds.Credential, root *route.TreeRoot) *Bot {
+func NewBot(cr creds.Credential, root *route.TreeRoot, table []cloudfunc.Schedule) *Bot {
 	b := &Bot{
 		credential: cr,
 		Jobs:       make(chan sch.Job),
 		root:       root,
 		sentmap:    make(map[int64]int),
+		table:      table,
 		resetTree:  make(map[int64]*route.TreeRoot),
 		sentresets: make(map[int64]int)}
 	b.initAPI()

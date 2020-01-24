@@ -19,6 +19,10 @@ func (b *Bot) handleCommand(update tgbotapi.Update) {
 		b.onSub(update)
 	case "reset", "unsub":
 		b.onReset(update)
+	case "week":
+		b.onWeek(update)
+	case "day":
+		b.onDay(update)
 	default:
 		return
 	}
@@ -31,6 +35,8 @@ func (b *Bot) handleMessage(update tgbotapi.Update) {
 	// 	log.Panic(err)
 	// }
 }
+func (b *Bot) onWeek(update tgbotapi.Update) {}
+func (b *Bot) onDay(update tgbotapi.Update)  {}
 
 func (b *Bot) onSub(update tgbotapi.Update) {
 	chatID := update.Message.Chat.ID
