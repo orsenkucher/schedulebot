@@ -1,0 +1,40 @@
+{
+	"name": "математична економіка та економетрика",
+	"events": [
+		{
+			"title": "MATHEMATICS II (6 лек., 2 пр.) проф. Капустян О.В. 26",
+			"day": "Tue",
+			"time": "8:40",
+			"spin": "up"
+		},
+		{
+			"title": "MATHEMATICS II (3 лек., 1 пр.) доц. Борисенко О.Д. 26",
+			"day": "Tue",
+			"time": "8:40",
+			"spin": "down"
+		},
+		{
+			"title": "COMPUTER STATISTICS(лек.) доц. Рижов А.Ю. 209",
+			"day": "Tue",
+			"time": "10:35",
+			"spin": "up"
+		},
+		{
+			"title": "Computer Statistics (пр./сем.) доц. Рижов А.Ю. 209",
+			"day": "Tue",
+			"time": "10:35",
+			"spin": "down"
+		},
+		{
+			"title": "MATHEMATICS II (лек.) доц. Рижов А.Ю. 308",
+			"day": "Wed",
+			"time": "8:40"
+		},
+		{
+			"title": "MATHEMATICS II доц. Рижов А.Ю. 308",
+			"day": "Wed",
+			"time": "10:35",
+			"spin": "up"
+		}
+	]
+}
