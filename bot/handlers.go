@@ -56,7 +56,7 @@ func (b *Bot) onWeek(update tgbotapi.Update) {
 	msg := tgbotapi.NewMessage(chatID, "")
 	subs := fbclient.FetchUsersSubs(chatID)
 	evlist := ""
-	if len(subs) == 0 {
+	if len(subs) > 0 {
 		schnameb, _ := json.Marshal(subs[0])
 		schname := string(schnameb)
 
@@ -80,7 +80,7 @@ func (b *Bot) onToday(update tgbotapi.Update) {
 	chatID := update.Message.Chat.ID
 	msg := tgbotapi.NewMessage(chatID, "")
 	subs := fbclient.FetchUsersSubs(chatID)
-	if len(subs) == 0 {
+	if len(subs) > 0 {
 		schnameb, _ := json.Marshal(subs[0])
 		schname := string(schnameb)
 
@@ -101,7 +101,7 @@ func (b *Bot) onMorrow(update tgbotapi.Update) {
 	chatID := update.Message.Chat.ID
 	msg := tgbotapi.NewMessage(chatID, "")
 	subs := fbclient.FetchUsersSubs(chatID)
-	if len(subs) == 0 {
+	if len(subs) > 0 {
 		schnameb, _ := json.Marshal(subs[0])
 		schname := string(schnameb)
 
