@@ -1,9 +1,12 @@
 package bot
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
+	"github.com/orsenkucher/schedulebot/cloudfunc"
 	"github.com/orsenkucher/schedulebot/route"
 
 	"strings"
@@ -35,11 +38,68 @@ func (b *Bot) handleMessage(update tgbotapi.Update) {
 	// 	log.Panic(err)
 	// }
 }
-func (b *Bot) onWeek(update tgbotapi.Update) {}
-func (b *Bot) onDay(update tgbotapi.Update)  {}
+
+func getSchForDay(sch cloudfunc.Schedule, day int) string {
+	str := string(time.Weekday(day)) + ":\n"
+	for i := range sch.Event {
+		if sch.Minute[i] >= day*24*60 && sch.Minute[i] < (day+1)*24*60 {
+			str += sch.Event[i] + "\n"
+		}
+	}
+	return str
+}
+
+func (b *Bot) onWeek(update tgbotapi.Update) {
+	chatID := update.Message.Chat.ID
+	msg := tgbotapi.NewMessage(chatID, "")
+	subs := fbclient.FetchUsersSubs(chatID)
+	evlist := ""
+	if len(subs) == 0 {
+		schnameb, _ := json.Marshal(subs[0])
+		schname := string(schnameb)
+
+		for _, sch := range b.table {
+			if sch.Name == schname {
+				for day := 1; day < 6; day++ {
+					evlist += getSchForDay(sch, day) + "\n"
+				}
+				msg = tgbotapi.NewMessage(chatID, evlist)
+			}
+		}
+	} else {
+		msg = tgbotapi.NewMessage(chatID, "Для получения рассписания нужно выбрать группу")
+	}
+	if _, err := b.api.Send(msg); err != nil {
+		log.Println(err)
+	}
+}
+
+func (b *Bot) onDay(update tgbotapi.Update) {
+	chatID := update.Message.Chat.ID
+	msg := tgbotapi.NewMessage(chatID, "")
+	subs := fbclient.FetchUsersSubs(chatID)
+	if len(subs) == 0 {
+		schnameb, _ := json.Marshal(subs[0])
+		schname := string(schnameb)
+
+		for _, sch := range b.table {
+			if sch.Name == schname {
+				msg = tgbotapi.NewMessage(chatID, getSchForDay(sch, int(time.Now().Weekday())))
+			}
+		}
+	} else {
+		msg = tgbotapi.NewMessage(chatID, "Для получения рассписания нужно выбрать группу")
+	}
+	if _, err := b.api.Send(msg); err != nil {
+		log.Println(err)
+	}
+}
 
 func (b *Bot) onSub(update tgbotapi.Update) {
 	chatID := update.Message.Chat.ID
+
+	//subs := fbclient.FetchUsersSubs()
+
 	dropped := b.root.Rootnode.Drop()
 	msg := tgbotapi.NewMessage(chatID, "Выбери свое расписание👇🏻\n"+dropped.String()) // ⬇️ 🎓 👇🏻
 	mkp, ok := GenFor(dropped)
