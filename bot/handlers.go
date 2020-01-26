@@ -121,7 +121,14 @@ func (b *Bot) onMorrow(update tgbotapi.Update) {
 func (b *Bot) onSub(update tgbotapi.Update) {
 	chatID := update.Message.Chat.ID
 
-	//subs := fbclient.FetchUsersSubs()
+	subs := fbclient.FetchUsersSubs(chatID)
+
+	for _, path := range subs {
+		schnameb, _ := json.Marshal(path)
+		schname := string(schnameb)
+		b.updsmap[schname] <- root.SubEvent{Action: root.Del, SubID: chatID}
+		fbclient.DeleteSubscriber(chatID, schname)
+	}
 
 	dropped := b.root.Rootnode.Drop()
 	msg := tgbotapi.NewMessage(chatID, "Выбери свое расписание👇🏻\n"+dropped.String()) // ⬇️ 🎓 👇🏻

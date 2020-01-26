@@ -24,6 +24,7 @@ type Bot struct {
 	sentmap    map[int64]int             // map[userID]msgID
 	resetTree  map[int64]*route.TreeRoot // map[userID]ResetTree Root
 	sentresets map[int64]int             // map[userID]msgID - with reset layout
+	updsmap    map[string]chan root.SubEvent
 	Table      []cloudfunc.Schedule
 }
 
@@ -69,6 +70,7 @@ func (b *Bot) processJobs() {
 
 // Listen starts infinite listening
 func (b *Bot) Listen(updsmap map[string]chan root.SubEvent) {
+	b.updsmap = updsmap
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
