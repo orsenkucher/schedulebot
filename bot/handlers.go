@@ -120,16 +120,6 @@ func (b *Bot) onMorrow(update tgbotapi.Update) {
 
 func (b *Bot) onSub(update tgbotapi.Update) {
 	chatID := update.Message.Chat.ID
-
-	subs := fbclient.FetchUsersSubs(chatID)
-
-	for _, path := range subs {
-		schnameb, _ := json.Marshal(path)
-		schname := string(schnameb)
-		b.updsmap[schname] <- root.SubEvent{Action: root.Del, SubID: chatID}
-		fbclient.DeleteSubscriber(chatID, schname)
-	}
-
 	dropped := b.root.Rootnode.Drop()
 	msg := tgbotapi.NewMessage(chatID, "Выбери свое расписание👇🏻\n"+dropped.String()) // ⬇️ 🎓 👇🏻
 	mkp, ok := GenFor(dropped)
@@ -278,6 +268,15 @@ func (b *Bot) onRoute(bundle idBundle, chans map[string]chan root.SubEvent) {
 			schName := node.MakePath()
 			ch, ok := chans[schName]
 			if ok {
+				subs := fbclient.FetchUsersSubs(bundle.chatID)
+
+				for _, path := range subs {
+					schnameb, _ := json.Marshal(path)
+					schname := string(schnameb)
+					b.updsmap[schname] <- root.SubEvent{Action: root.Del, SubID: bundle.chatID}
+					fbclient.DeleteSubscriber(bundle.chatID, schname)
+				}
+
 				ch <- root.SubEvent{Action: root.Add, SubID: bundle.chatID}
 				fbclient.AddSubscriber(bundle.chatID, schName)
 				// snackMsg := "Our congrats 🥂. We handled your sub!"
