@@ -45,8 +45,9 @@ func main() {
 	t := route.BuildOSTree()
 	t.Print()
 	tr := route.NewTreeRoot(t)
+	b := bot.NewBot(creds.Cr459, tr)
 	updsmap, table := sch.SpawnSchedulers(b.Jobs)
-	b := bot.NewBot(creds.Cr459, tr, table)
+	b.Table = table
 	b.Listen(updsmap)
 	// */
 

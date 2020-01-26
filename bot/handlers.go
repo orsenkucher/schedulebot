@@ -58,7 +58,7 @@ func (b *Bot) onWeek(update tgbotapi.Update) {
 		schnameb, _ := json.Marshal(subs[0])
 		schname := string(schnameb)
 
-		for _, sch := range b.table {
+		for _, sch := range b.Table {
 			if sch.Name == schname {
 				for day := 1; day < 6; day++ {
 					evlist += getSchForDay(sch, day) + "\n"
@@ -82,7 +82,7 @@ func (b *Bot) onDay(update tgbotapi.Update) {
 		schnameb, _ := json.Marshal(subs[0])
 		schname := string(schnameb)
 
-		for _, sch := range b.table {
+		for _, sch := range b.Table {
 			if sch.Name == schname {
 				msg = tgbotapi.NewMessage(chatID, getSchForDay(sch, int(time.Now().Weekday())))
 			}
