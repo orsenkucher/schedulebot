@@ -24,8 +24,10 @@ func (b *Bot) handleCommand(update tgbotapi.Update) {
 		b.onReset(update)
 	case "week":
 		b.onWeek(update)
-	case "day":
-		b.onDay(update)
+	case "today":
+		b.onToday(update)
+	case "morrow", "tomorrow":
+		b.onMorrow(update)
 	default:
 		return
 	}
@@ -74,7 +76,7 @@ func (b *Bot) onWeek(update tgbotapi.Update) {
 	}
 }
 
-func (b *Bot) onDay(update tgbotapi.Update) {
+func (b *Bot) onToday(update tgbotapi.Update) {
 	chatID := update.Message.Chat.ID
 	msg := tgbotapi.NewMessage(chatID, "")
 	subs := fbclient.FetchUsersSubs(chatID)
@@ -85,6 +87,27 @@ func (b *Bot) onDay(update tgbotapi.Update) {
 		for _, sch := range b.Table {
 			if sch.Name == schname {
 				msg = tgbotapi.NewMessage(chatID, getSchForDay(sch, int(time.Now().Weekday())))
+			}
+		}
+	} else {
+		msg = tgbotapi.NewMessage(chatID, "Для получения рассписания нужно выбрать группу")
+	}
+	if _, err := b.api.Send(msg); err != nil {
+		log.Println(err)
+	}
+}
+
+func (b *Bot) onMorrow(update tgbotapi.Update) {
+	chatID := update.Message.Chat.ID
+	msg := tgbotapi.NewMessage(chatID, "")
+	subs := fbclient.FetchUsersSubs(chatID)
+	if len(subs) == 0 {
+		schnameb, _ := json.Marshal(subs[0])
+		schname := string(schnameb)
+
+		for _, sch := range b.Table {
+			if sch.Name == schname {
+				msg = tgbotapi.NewMessage(chatID, getSchForDay(sch, int((time.Now().Weekday()+1)%7)))
 			}
 		}
 	} else {
