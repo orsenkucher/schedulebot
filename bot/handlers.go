@@ -42,7 +42,7 @@ func (b *Bot) handleMessage(update tgbotapi.Update) {
 }
 
 func getSchForDay(sch cloudfunc.Schedule, day int) string {
-	str := string(time.Weekday(day)) + ":\n"
+	str := time.Weekday(day).String() + ":\n"
 	for i := range sch.Event {
 		if sch.Minute[i] >= day*24*60 && sch.Minute[i] < (day+1)*24*60 {
 			str += sch.Event[i] + "\n"
