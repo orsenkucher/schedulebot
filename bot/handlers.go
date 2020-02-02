@@ -37,11 +37,11 @@ func (b *Bot) handleCommand(update tgbotapi.Update) {
 func (b *Bot) selectCase(text string, update tgbotapi.Update) bool {
 	text = strings.ToLower(text)
 	switch {
-	case contains(text, "sub", "go", "подписаться", "подписка", "старт"):
+	case contains(text, "sub", "go", "подпис", "старт"):
 		b.onSub(update)
-	case contains(text, "reset", "unsub", "отписаться", "отписка"):
+	case contains(text, "reset", "unsub", "отпис"):
 		b.onReset(update)
-	case contains(text, "week", "недел", "расписание"):
+	case contains(text, "week", "недел", "распис"):
 		b.onWeek(update)
 	case contains(text, "today", "сегодня"):
 		b.onToday(update)
