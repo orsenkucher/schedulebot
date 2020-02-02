@@ -18,7 +18,12 @@ import (
 
 func (b *Bot) handleMessage(update tgbotapi.Update) {
 	if ok := b.selectCase(update.Message.Text, update); !ok {
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Default")
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, `Я не совсем понял, что ты хочешь, но могу предложить следующие функции:\n
+		/today - показать пары на сегодня
+		/morrow - показать пары на завтра
+		/sub - подписаться
+		/unsub - отписаться
+		/week - показать пары на неделю`)
 		if _, err := b.api.Send(msg); err != nil {
 			log.Println(err)
 		}
@@ -30,16 +35,17 @@ func (b *Bot) handleCommand(update tgbotapi.Update) {
 }
 
 func (b *Bot) selectCase(text string, update tgbotapi.Update) bool {
+	text = strings.ToLower(text)
 	switch {
-	case contains(text, "sub", "start", "go"):
+	case contains(text, "sub", "go", "подписаться", "подписка", "старт"):
 		b.onSub(update)
-	case contains(text, "reset", "unsub"):
+	case contains(text, "reset", "unsub", "отписаться", "отписка"):
 		b.onReset(update)
-	case contains(text, "week"):
+	case contains(text, "week", "недел", "расписание"):
 		b.onWeek(update)
-	case contains(text, "today"):
+	case contains(text, "today", "сегодня"):
 		b.onToday(update)
-	case contains(text, "morrow", "tomorrow"):
+	case contains(text, "morrow", "tomorrow", "завтра"):
 		b.onMorrow(update)
 	default:
 		return false
