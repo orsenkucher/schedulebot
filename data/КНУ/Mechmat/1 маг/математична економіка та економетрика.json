@@ -2,13 +2,13 @@
 	"name": "математична економіка та економетрика",
 	"events": [
 		{
-			"title": "MATHEMATICS II (6 лек., 2 пр.) проф. Капустян О.В. 26",
+			"title": "MATHEMATICS II (6 лек., 2 пр.) проф. Капустян О.В. 504",
 			"day": "Tue",
 			"time": "8:40",
 			"spin": "up"
 		},
 		{
-			"title": "MATHEMATICS II (3 лек., 1 пр.) доц. Борисенко О.Д. 26",
+			"title": "MATHEMATICS II (6 лек., 2 пр.) доц. Борисенко О.Д. 26",
 			"day": "Tue",
 			"time": "8:40",
 			"spin": "down"
@@ -26,14 +26,14 @@
 			"spin": "down"
 		},
 		{
-			"title": "MATHEMATICS II (лек.) доц. Рижов А.Ю. 308",
-			"day": "Wed",
-			"time": "8:40"
+			"title": "MATHEMATICS II (лек.) доц. Рижов А.Ю. 208",
+			"day": "Tue",
+			"time": "12:20"
 		},
 		{
-			"title": "MATHEMATICS II доц. Рижов А.Ю. 308",
-			"day": "Wed",
-			"time": "10:35",
+			"title": "MATHEMATICS II доц. Рижов А.Ю. 305",
+			"day": "Fri",
+			"time": "8:40",
 			"spin": "up"
 		}
 	]
