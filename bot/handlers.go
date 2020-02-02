@@ -16,29 +16,35 @@ import (
 	"github.com/orsenkucher/schedulebot/root"
 )
 
-func (b *Bot) handleCommand(update tgbotapi.Update) {
-	switch update.Message.Command() {
-	case "sub", "start", "go":
-		b.onSub(update)
-	case "reset", "unsub":
-		b.onReset(update)
-	case "week":
-		b.onWeek(update)
-	case "today":
-		b.onToday(update)
-	case "morrow", "tomorrow":
-		b.onMorrow(update)
-	default:
-		return
+func (b *Bot) handleMessage(update tgbotapi.Update) {
+	if ok := b.selectCase(update.Message.Text, update); !ok {
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Default")
+		if _, err := b.api.Send(msg); err != nil {
+			log.Println(err)
+		}
 	}
 }
 
-func (b *Bot) handleMessage(update tgbotapi.Update) {
-	// // Do nothing
-	// msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-	// if _, err := bot.Send(msg); err != nil {
-	// 	log.Panic(err)
-	// }
+func (b *Bot) handleCommand(update tgbotapi.Update) {
+	b.selectCase(update.Message.Command(), update)
+}
+
+func (b *Bot) selectCase(text string, update tgbotapi.Update) bool {
+	switch {
+	case strings.Contains("sub"+"start"+"go", text):
+		b.onSub(update)
+	case strings.Contains("reset"+"unsub", text):
+		b.onReset(update)
+	case strings.Contains("week", text):
+		b.onWeek(update)
+	case strings.Contains("today", text):
+		b.onToday(update)
+	case strings.Contains("morrow"+"tomorrow", text):
+		b.onMorrow(update)
+	default:
+		return false
+	}
+	return true
 }
 
 func getSchForDay(sch cloudfunc.Schedule, day int) string {
