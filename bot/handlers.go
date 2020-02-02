@@ -31,20 +31,29 @@ func (b *Bot) handleCommand(update tgbotapi.Update) {
 
 func (b *Bot) selectCase(text string, update tgbotapi.Update) bool {
 	switch {
-	case strings.Contains("sub"+"start"+"go", text):
+	case contains(text, "sub", "start", "go"):
 		b.onSub(update)
-	case strings.Contains("reset"+"unsub", text):
+	case contains(text, "reset", "unsub"):
 		b.onReset(update)
-	case strings.Contains("week", text):
+	case contains(text, "week"):
 		b.onWeek(update)
-	case strings.Contains("today", text):
+	case contains(text, "today"):
 		b.onToday(update)
-	case strings.Contains("morrow"+"tomorrow", text):
+	case contains(text, "morrow", "tomorrow"):
 		b.onMorrow(update)
 	default:
 		return false
 	}
 	return true
+}
+
+func contains(text string, words ...string) bool {
+	for _, w := range words {
+		if strings.Contains(text, w) {
+			return true
+		}
+	}
+	return false
 }
 
 func getSchForDay(sch cloudfunc.Schedule, day int) string {
