@@ -66,7 +66,7 @@ func getSchForDay(sch cloudfunc.Schedule, day int) string {
 	str := time.Weekday(day).String() + ":\n"
 	_, thisWeek := time.Now().UTC().ISOWeek()
 	for i := range sch.Event {
-		if sch.Minute[i] >= day*24*60 && sch.Minute[i] < (day+1)*24*60 && (sch.Type[i] == -1 || sch.Type[i] == (thisWeek+1)%2) {
+		if sch.Minute[i] >= day*24*60 && sch.Minute[i] < (day+1)*24*60 && (sch.Type[i] == -1 || sch.Type[i] == thisWeek%2) {
 			str += sch.Event[i] + "\n"
 		}
 	}
