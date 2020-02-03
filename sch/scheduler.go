@@ -98,7 +98,7 @@ func calcNextSchedule(s cloudfunc.Schedule) (time.Duration, int) {
 
 	for i := 0; i < len(s.Event); i++ {
 		curmins := (s.Minute[i] - 15 - mins + mpw) % mpw
-		if s.Type[i] == thisWeek%2 {
+		if s.Type[i] == (thisWeek+1)%2 {
 			curmins += mpw
 		}
 		if minMins > curmins && curmins != 0 {

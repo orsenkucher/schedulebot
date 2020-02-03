@@ -45,7 +45,7 @@ func (b *Bot) selectCase(text string, update tgbotapi.Update) bool {
 		b.onToday(update)
 	case contains(text, "morrow", "tomorrow", "завтра"):
 		b.onMorrow(update)
-	case contains(text, "week", "недел"):
+	case contains(text, "week", "недел", "распис"):
 		b.onWeek(update)
 	default:
 		return false
