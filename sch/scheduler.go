@@ -68,7 +68,7 @@ func (s *Scheduler) activateSchedule() {
 	for {
 		delay, idx := calcNextSchedule(s.sch)
 		fmt.Println(s.getSubIDs())
-		fmt.Println("sleep for:", delay.Minutes())
+		fmt.Println(s.sch.Name, " sleep for:", delay.Minutes())
 		// if delay < 3*time.Hour {
 		// 	ids := s.getSubIDs()
 		// 	s.jobs <- Job{Subs: ids, Event: s.sch.Event[idx]}
