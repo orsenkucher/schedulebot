@@ -1,9 +1,12 @@
 package bot
 
 import (
+	"fmt"
 	"log"
+	"strconv"
 	"time"
 
+	"github.com/orsenkucher/schedulebot/fbclient"
 	"github.com/orsenkucher/schedulebot/route"
 
 	"github.com/orsenkucher/schedulebot/sch"
@@ -111,6 +114,10 @@ func (b *Bot) SpreadMessage(users []int64, msg string) {
 			}
 		}
 
+		sticker := tgbotapi.NewStickerShare(u, "CAACAgIAAxkBAAJDJV5K6A4O_8S7rvWAlwqcbIC2vYK3AALHAAMw1J0RtZ_tS_0N3O4YBA")
+		if _, err := b.api.Send(sticker); err != nil {
+			log.Print(err)
+		}
 		log.Printf("Sending to %v\n", u)
 		tgmsg := tgbotapi.NewMessage(u, msg)
 		sent, err := b.api.Send(tgmsg)
@@ -120,4 +127,31 @@ func (b *Bot) SpreadMessage(users []int64, msg string) {
 			b.sentmap[u] = sent.MessageID
 		}
 	}
+}
+
+func (b *Bot) SendToEveryone(msg string) {
+	subs := fbclient.FetchSubscribers()
+	smap := map[string]int{}
+
+	for _, slist := range subs {
+		for _, sub := range slist {
+			smap[sub.ID] = 0
+		}
+	}
+
+	idlist := []int64{}
+	for id := range smap {
+		i, _ := strconv.ParseInt(id, 10, 64)
+		if i == 259224772 || i == 364448153 {
+			idlist = append(idlist, i)
+		}
+	}
+
+	for _, id := range idlist {
+		fmt.Println(id)
+	}
+
+	fmt.Print(0)
+	fmt.Scanln()
+	b.SpreadMessage(idlist, msg)
 }

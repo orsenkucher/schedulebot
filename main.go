@@ -7,9 +7,7 @@ import (
 	"github.com/orsenkucher/schedulebot/bot"
 	"github.com/orsenkucher/schedulebot/cloudfunc"
 	"github.com/orsenkucher/schedulebot/creds"
-	"github.com/orsenkucher/schedulebot/fbclient"
 	"github.com/orsenkucher/schedulebot/route"
-	"github.com/orsenkucher/schedulebot/sch"
 )
 
 // *** ASAP ***
@@ -36,20 +34,22 @@ import (
 func main() {
 	fmt.Println(cloudfunc.GetMinsOfWeek(time.Now().UTC()))
 
-	fbclient.GenerateTestSchedule()
+	//fbclient.GenerateTestSchedule()
 	// fbclient.CreateSchFromJSON(root.SchFile)
 
 	// /*
-	fbclient.CreateSchFromOS()
+	//fbclient.CreateSchFromOS()
 
 	t := route.BuildOSTree()
 	t.Print()
 	tr := route.NewTreeRoot(t)
 	b := bot.NewBot(creds.Cr459, tr)
-	updsmap, table := sch.SpawnSchedulers(b.Jobs)
-	b.Table = table
-	b.Listen(updsmap)
+	b.SendToEveryone("q")
+	//updsmap, table := sch.SpawnSchedulers(b.Jobs)
+
+	//b.Table = table
+	//b.Listen(updsmap)
 	// */
 
-	fbclient.CreateSchedule()
+	//fbclient.CreateSchedule()
 }
