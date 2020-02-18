@@ -114,12 +114,14 @@ func (b *Bot) SpreadMessage(users []int64, msg string) {
 			}
 		}
 
-		sticker := tgbotapi.NewStickerShare(u, "CAACAgIAAxkBAAJDJV5K6A4O_8S7rvWAlwqcbIC2vYK3AALHAAMw1J0RtZ_tS_0N3O4YBA")
-		if _, err := b.api.Send(sticker); err != nil {
-			log.Print(err)
-		}
+		//STICKER SEND
+		// sticker := tgbotapi.NewStickerShare(u, "CAACAgIAAxkBAAJDJV5K6A4O_8S7rvWAlwqcbIC2vYK3AALHAAMw1J0RtZ_tS_0N3O4YBA")
+		// if _, err := b.api.Send(sticker); err != nil {
+		// 	log.Print(err)
+		// }
 		log.Printf("Sending to %v\n", u)
 		tgmsg := tgbotapi.NewMessage(u, msg)
+		tgmsg.ParseMode = "Markdown"
 		sent, err := b.api.Send(tgmsg)
 		if err != nil {
 			log.Println(err)
